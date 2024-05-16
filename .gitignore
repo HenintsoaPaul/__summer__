@@ -28,3 +28,6 @@ out/
 
 # generated framework
 summer-framework.jar
+
+.idea
+__summer__.iml
