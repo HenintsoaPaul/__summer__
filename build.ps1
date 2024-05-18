@@ -23,6 +23,7 @@ echo "Creation d'un dossier target pour les fichiers .class apres la compilation
 New-Item -ItemType Directory -Path $target_dir
 
 # Copier tous les fichiers Java dans le dossier temporaire
+echo "Copie des fichiers .java dans le dossier temporaire ..."
 Get-ChildItem -LiteralPath $src_dir -Recurse -Filter *.java | ForEach-Object {
     if ($_.BaseName -ne "Main") {
         Copy-Item -Path $_.FullName -Destination $temp_dir
@@ -33,8 +34,8 @@ Get-ChildItem -LiteralPath $src_dir -Recurse -Filter *.java | ForEach-Object {
 Set-Location -Path $temp_dir
 
 # Compiler les fichiers.java et les envoyer vers $target_dir
-echo "Fin de la compilation."
 javac -d $target_dir *.java
+echo "Fin de la compilation."
 
 # Retourner au répertoire parent
 Set-Location -Path $work_dir
@@ -51,7 +52,7 @@ Built-By: Henintsoa Paul MANITRAJA
 "@ > $manifest_file
 
 # Créer le fichier JAR
-echo "Création du jar..."
+echo "Création du jar du framework..."
 jar cf summer-framework.jar -C $target_dir.
 
 # Effacer le dossier OUT
