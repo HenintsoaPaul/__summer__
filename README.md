@@ -1,12 +1,24 @@
 # __summer__
 Creation of a java framework based on spring-framework.
 
+
+## How to use the `summer` framework?
+
+- Clone from the project from GitHub.
+
+- Run `build.ps1` in powershell. That will create `summer-framework.jar`.
+
+- Add `summer-framework.jar` in the `lib/` folder of your working directory.
+ 
+- Set `summer-framework.jar` as one of the libraries used in you working directory.
+
+And... That is it. Normally, after completing those steps, you can use `summer`
+framework in any java project. Happy coding...😊😉
+
+
 ## How to create Controllers?
 
-- Create a folder for your controllers.
-Like `controllers_dir`. You can add classes that ain't controller
-in this folder.
-
+- Create a folder for your controllers like `controllers_dir`.
 
 - Add the name of `controllers_dir` in the `web.xml` file
 of your project like the following:
@@ -18,5 +30,16 @@ of your project like the following:
   </context-param>
 ```
 
-- When you create a new controller, add the annotation `Controller` in 
-the package `src.summer.annotations` in the .jar of the framework.
+- When you create a new controller, add the annotation `@Controller` of 
+the package `src.summer.annotations` in the `summer-framework.jar`.
+
+
+## How to map a method in a Controller to listen to a URL?
+
+- Make sure you have configured the controller folder in the `web.xml` file.
+
+- Make sure your method is in a class annotated with `@Controller`.
+
+- Annotate your method with `@GetMapping(<myMapping>)` annotation of 
+the package `src.summer.annotations` in the `summer-framework.jar`.
+`myMapping` is a string representing the URL you want to be listened to.
