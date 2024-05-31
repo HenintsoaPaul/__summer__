@@ -68,4 +68,10 @@ public class ScannerUtil {
             }
         }
     }
+
+    public static Class<?> getControllerClass( String controllerName )
+            throws ClassNotFoundException {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        return classLoader.loadClass( controllerName );
+    }
 }

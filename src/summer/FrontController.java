@@ -9,6 +9,8 @@ import src.summer.utils.ScannerUtil;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 
 public class FrontController extends HttpServlet {
@@ -47,10 +49,24 @@ public class FrontController extends HttpServlet {
 
         try {
             Mapping mapping = this.URLMappings.get( route );
-            out.println( "Controller: " + mapping.getControllerName() );
-            out.println( "Method: " + mapping.getMethodName() );
+            String controllerName = mapping.getControllerName(),
+                    methodName = mapping.getMethodName();
+
+            // Print [Controller - Method]
+            out.println( "Controller: " + controllerName );
+            out.println( "Method: " + methodName );
+
+            // Execute the method
+            Class<?> controllerClass = ScannerUtil.getControllerClass( controllerName );
+            Method method = controllerClass.getDeclaredMethod( methodName );
+            Object returnValue = method.invoke( controllerClass.newInstance() );
+
+            out.println( "Return Value: " + returnValue );
         } catch ( NullPointerException e ) {
             out.println( "There is no Controller and Method for url : \"" + route + "\"" );
+        } catch ( ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException |
+                  InvocationTargetException e ) {
+            throw new RuntimeException( e );
         }
     }
 }
