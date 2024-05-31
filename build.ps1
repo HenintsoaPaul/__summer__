@@ -14,6 +14,8 @@ if (Test-Path $target_dir) {
     Remove-Item -Path $target_dir -Recurse -Force
 }
 
+
+
 # Créer le dossier temporaire
 echo "Creation d'un dossier temporaire pour la compilation ..."
 New-Item -ItemType Directory -Path $temp_dir
@@ -37,12 +39,16 @@ Set-Location -Path $temp_dir
 javac -d $target_dir *.java
 echo "Fin de la compilation."
 
+
+
 # Retourner au répertoire parent
 Set-Location -Path $work_dir
 
 # Supprimer le dossier temporaire
 echo "Suppression du dossier temporaire."
 Remove-Item -Path $temp_dir -Recurse -Force
+
+
 
 # Créer le fichier manifeste
 echo "Creation du fichier MANIFEST..."
@@ -51,9 +57,13 @@ Manifest-Version: 1.0
 Built-By: Henintsoa Paul MANITRAJA
 "@ > $manifest_file
 
+
+
 # Créer le fichier JAR
 echo "Création du jar du framework..."
 jar cf summer-framework.jar -C $target_dir.
+
+
 
 # Effacer le dossier OUT
 echo "Suppression du dossier OUT..."
