@@ -61,12 +61,24 @@ public class FrontController extends HttpServlet {
             Method method = controllerClass.getDeclaredMethod( methodName );
             Object returnValue = method.invoke( controllerClass.newInstance() );
 
-            out.println( "Return Value: " + returnValue );
+            // Display return value
+            displayValue( response, returnValue );
         } catch ( NullPointerException e ) {
             out.println( "There is no Controller and Method for url : \"" + route + "\"" );
         } catch ( ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException |
                   InvocationTargetException e ) {
             throw new RuntimeException( e );
+        }
+    }
+
+    private static void displayValue( HttpServletResponse response, Object value )
+            throws IOException {
+        if ( value.getClass().getName().equals( ModelView.class.getName() ) ) {
+            String url = ((ModelView) value).getUrl(); // get the path to the view
+            response.sendRedirect( url ); // display view
+        }
+        else {
+            response.getWriter().println( "Return Value: " + value );
         }
     }
 }
