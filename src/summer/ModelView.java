@@ -23,6 +23,9 @@ public class ModelView {
     public HashMap<String, Object> getData() {
         return data;
     }
+    public Object getObject( String key ) {
+        return data.get(key);
+    }
 
     public void setData( HashMap<String, Object> data ) {
         this.data = data;
