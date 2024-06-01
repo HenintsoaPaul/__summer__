@@ -66,6 +66,7 @@ public class FrontController extends HttpServlet {
             displayValue( request, response, returnValue );
         } catch ( NullPointerException e ) {
             out.println( "There is no Controller and Method for url : \"" + route + "\"" );
+            throw new RuntimeException( e );
         } catch ( ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException |
                   InvocationTargetException e ) {
             throw new RuntimeException( e );

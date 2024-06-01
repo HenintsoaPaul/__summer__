@@ -28,6 +28,7 @@ public class ModelView {
     }
 
     public void setData( HashMap<String, Object> data ) {
+        if ( data == null ) data = new HashMap<>();
         this.data = data;
     }
 
