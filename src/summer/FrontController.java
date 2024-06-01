@@ -1,5 +1,6 @@
 package src.summer;
 
+import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,18 +31,18 @@ public class FrontController extends HttpServlet {
 
     @Override
     public void doGet( HttpServletRequest request, HttpServletResponse response )
-            throws IOException {
+            throws IOException, ServletException {
         processRequest( request, response );
     }
 
     @Override
     public void doPost( HttpServletRequest request, HttpServletResponse response )
-            throws IOException {
+            throws IOException, ServletException {
         processRequest( request, response );
     }
 
     protected void processRequest( HttpServletRequest request, HttpServletResponse response )
-            throws IOException {
+            throws IOException, ServletException {
         PrintWriter out = response.getWriter();
 
         String url = request.getRequestURI(); // something like "/summer/<blab>/<...>"
@@ -62,22 +63,28 @@ public class FrontController extends HttpServlet {
             Object returnValue = method.invoke( controllerClass.newInstance() );
 
             // Display return value
-            displayValue( response, returnValue );
+            displayValue( request, response, returnValue );
         } catch ( NullPointerException e ) {
             out.println( "There is no Controller and Method for url : \"" + route + "\"" );
+            throw new RuntimeException( e );
         } catch ( ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException |
                   InvocationTargetException e ) {
             throw new RuntimeException( e );
         }
     }
 
-    private static void displayValue( HttpServletResponse response, Object value )
-            throws IOException {
+    private static void displayValue( HttpServletRequest request, HttpServletResponse response, Object value )
+            throws IOException, ServletException {
         if ( value.getClass().getName().equals( ModelView.class.getName() ) ) {
-            String url = ((ModelView) value).getUrl(); // get the path to the view
-            response.sendRedirect( url ); // display view
-        }
-        else {
+            ModelView mv = ( ModelView ) value;
+
+            String url = mv.getUrl(); // get the path to the view
+            for ( String key : mv.getData().keySet() ) { // send data in mv with the dispatcher
+                request.setAttribute( key, mv.getObject( key ) );
+            }
+            RequestDispatcher dispatcher = request.getRequestDispatcher( url );
+            dispatcher.forward( request, response );
+        } else {
             response.getWriter().println( "Return Value: " + value );
         }
     }
