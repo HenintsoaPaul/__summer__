@@ -16,7 +16,7 @@ import src.summer.exception.SummerInitException;
 
 public class ScannerUtil {
     public static HashMap<String, Mapping> scanControllers( String packageName )
-            throws ServletException, ClassNotFoundException, IOException {
+            throws ServletException, ClassNotFoundException {
         HashMap<String, Mapping> URLMappings = new HashMap<>();
         File file = new File( getURLPackage( packageName ).getFile() );
         if ( file.isDirectory() ) {
