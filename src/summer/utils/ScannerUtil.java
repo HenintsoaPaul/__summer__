@@ -1,35 +1,46 @@
 package src.summer.utils;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Objects;
 
+import jakarta.servlet.ServletException;
 import src.summer.Mapping;
+import src.summer.ModelView;
 import src.summer.annotations.Controller;
 import src.summer.annotations.GetMapping;
+import src.summer.exception.SummerInitException;
 
 public class ScannerUtil {
     public static HashMap<String, Mapping> scanControllers( String packageName )
-            throws Exception {
+            throws ServletException, ClassNotFoundException, IOException {
         HashMap<String, Mapping> URLMappings = new HashMap<>();
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        Enumeration<URL> resources = classLoader.getResources( packageName.replace( ".", "/" ) );
-        while ( resources.hasMoreElements() ) {
-            URL resource = resources.nextElement();
-            File file = new File( resource.getFile() );
-            if ( file.isDirectory() ) {
-                scanDirectory( file, packageName, URLMappings );
-            } else {
-                scanFile( file, packageName, URLMappings );
+        File file = new File( getURLPackage( packageName ).getFile() );
+        if ( file.isDirectory() ) {
+            if ( Objects.requireNonNull( file.listFiles() ).length == 0 ) { // The package is empty.
+                throw new SummerInitException( "Directory \"" + file.getName() + "\" is empty." );
             }
-        }
+            scanDirectory( file, packageName, URLMappings );
+        } else scanFile( file, packageName, URLMappings );
+
         return URLMappings;
     }
 
-    public static void scanDirectory( File directory, String packageName, HashMap<String, Mapping> URLMappings )
-            throws Exception {
+    private static URL getURLPackage( String packageName )
+            throws SummerInitException {
+        if ( packageName == null || packageName.isEmpty() ) // The user did not specify the controller package.
+            throw new SummerInitException( "packageName is null or empty. Please check your \"web.xml\" file." );
+
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        URL resource = classLoader.getResource( packageName.replace( ".", "/" ) );
+
+        if ( resource == null ) // The package does not exist.
+            throw new SummerInitException( "Package \"" + packageName + "\" does not exist." );
+        return resource;
+    }
 
     private static void scanDirectory( File directory, String packageName, HashMap<String, Mapping> URLMappings )
             throws ClassNotFoundException, ServletException {
