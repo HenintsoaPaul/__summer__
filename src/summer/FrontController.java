@@ -13,10 +13,12 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Enumeration;
 import java.util.HashMap;
 
 public class FrontController extends HttpServlet {
     private HashMap<String, Mapping> URLMappings = new HashMap<>();
+    private HashMap<String, Object> formInputs = new HashMap<>();
 
     @Override
     public void init()
@@ -39,6 +41,13 @@ public class FrontController extends HttpServlet {
     @Override
     public void doPost( HttpServletRequest request, HttpServletResponse response )
             throws IOException, ServletException {
+        // Extract form input values
+        Enumeration<String> names = request.getParameterNames();
+        while ( names.hasMoreElements() ) {
+            String name = names.nextElement();
+            this.formInputs.put( name, request.getParameter( name ) );
+        }
+
         processRequest( request, response );
     }
 
@@ -70,7 +79,7 @@ public class FrontController extends HttpServlet {
         }
     }
 
-    private static void displayValue( HttpServletRequest request, HttpServletResponse response,
+    private void displayValue( HttpServletRequest request, HttpServletResponse response,
                                       Object value, String controllerName, String methodName )
             throws IOException, ServletException {
         if ( value.getClass().getName().equals( ModelView.class.getName() ) ) {
@@ -79,6 +88,14 @@ public class FrontController extends HttpServlet {
 
             for ( String key : mv.getData().keySet() ) { // send data in mv with the dispatcher
                 request.setAttribute( key, mv.getObject( key ) );
+            }
+
+            // Send data from a <form> to the controller
+            if ( !this.formInputs.isEmpty() ) {
+                for ( String key : this.formInputs.keySet() ) {
+                    request.setAttribute( key, this.formInputs.get( key ) );
+                }
+                this.formInputs.clear();
             }
 
             RequestDispatcher dispatcher = request.getRequestDispatcher( url );
