@@ -1,12 +1,14 @@
 package src.summer;
 
+import java.lang.reflect.Method;
+
 public class Mapping {
     String controllerName;
-    String methodName;
+    Method method;
 
-    public Mapping( String controllerName, String methodName ) {
+    public Mapping( String controllerName, Method method ) {
         this.setControllerName( controllerName );
-        this.setMethodName( methodName );
+        this.setMethod( method );
     }
 
     public String getControllerName() {
@@ -17,11 +19,11 @@ public class Mapping {
         this.controllerName = controllerName;
     }
 
-    public String getMethodName() {
-        return methodName;
+    public Method getMethod() {
+        return method;
     }
 
-    public void setMethodName( String methodName ) {
-        this.methodName = methodName;
+    public void setMethod( Method method ) {
+        this.method = method;
     }
 }
