@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import src.summer.exception.SummerProcessException;
+import src.summer.utils.ParamUtil;
 import src.summer.utils.RouterUtil;
 import src.summer.utils.ScannerUtil;
 
@@ -14,10 +15,7 @@ import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class FrontController extends HttpServlet {
     private HashMap<String, Mapping> URLMappings = new HashMap<>();
@@ -58,41 +56,24 @@ public class FrontController extends HttpServlet {
             }
 
             Mapping mapping = this.URLMappings.get( route );
-            String controllerName = mapping.getControllerName();
             Method method = mapping.getMethod();
 
-            // Get the method
-            Class<?> controllerClass = ScannerUtil.getControllerClass( controllerName );
+            // Get the method params
             List<String> methodParams = new ArrayList<>();
-
-            // Get method expected parameterNames
-            List<String> methodExpectedParamNames = new ArrayList<>();
-            System.out.println( "Expected params: " );
             for ( Parameter parameter : method.getParameters() ) {
-                System.out.println( "- " + parameter.getName() );
-                methodExpectedParamNames.add( parameter.getName() );
+                methodParams.add( ParamUtil.getParameterValue( parameter, request ) );
             }
-            System.out.println( "Expected param ---\n" );
-
-            // Get url params
-            Enumeration<String> urlParamNames = request.getParameterNames();
-            System.out.println( "Url params:" );
-            while ( urlParamNames.hasMoreElements() ) {
-                String param = urlParamNames.nextElement();
-                System.out.println( "- " + param );
-                if ( methodExpectedParamNames.contains( param ) ) {
-                    methodParams.add( request.getParameter( param ) );
-                }
-            }
-            System.out.println( "Url params ---\n" );
 
             // Display return value
-            Object returnValue = method.invoke( controllerClass.newInstance(), methodParams.toArray() );
+            Object returnValue = method.invoke(
+                    ScannerUtil.getControllerClass( mapping.getControllerName() ).newInstance(),
+                    methodParams.toArray()
+            );
             displayValue( request, response, returnValue, mapping );
             System.out.println( "---\n" );
 
-        } catch ( ClassNotFoundException | InstantiationException |
-                  IllegalAccessException | InvocationTargetException e ) {
+        } catch ( ClassNotFoundException | InstantiationException | IllegalAccessException |
+                  InvocationTargetException e ) {
             throw new ServletException( e );
         }
     }
@@ -101,14 +82,12 @@ public class FrontController extends HttpServlet {
                                Object value, Mapping mapping )
             throws IOException, ServletException {
         if ( value.getClass().getName().equals( ModelView.class.getName() ) ) {
-            ModelView mv = ( ModelView ) value;
-            String url = mv.getUrl(); // get the path to the view
-
-            for ( String key : mv.getData().keySet() ) { // send data in mv with the dispatcher
-                request.setAttribute( key, mv.getObject( key ) );
+            ModelView modelView = ( ModelView ) value;
+            for ( String key : modelView.getData().keySet() ) { // send data in mv with the dispatcher
+                request.setAttribute( key, modelView.getObject( key ) );
             }
 
-            RequestDispatcher dispatcher = request.getRequestDispatcher( url );
+            RequestDispatcher dispatcher = request.getRequestDispatcher( modelView.getUrl() );
             dispatcher.forward( request, response );
         } else {
             // Print [Controller - Method - returnValue]

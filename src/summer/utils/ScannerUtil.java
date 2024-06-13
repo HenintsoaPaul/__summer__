@@ -1,7 +1,6 @@
 package src.summer.utils;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.HashMap;
@@ -14,7 +13,7 @@ import src.summer.annotations.Controller;
 import src.summer.annotations.GetMapping;
 import src.summer.exception.SummerInitException;
 
-public class ScannerUtil {
+public abstract class ScannerUtil {
     public static HashMap<String, Mapping> scanControllers( String packageName )
             throws ServletException, ClassNotFoundException {
         HashMap<String, Mapping> URLMappings = new HashMap<>();
