@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import src.summer.exception.SummerProcessException;
+import src.summer.utils.ParamUtil;
 import src.summer.utils.RouterUtil;
 import src.summer.utils.ScannerUtil;
 
@@ -13,12 +14,11 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Enumeration;
-import java.util.HashMap;
+import java.lang.reflect.Parameter;
+import java.util.*;
 
 public class FrontController extends HttpServlet {
     private HashMap<String, Mapping> URLMappings = new HashMap<>();
-    private HashMap<String, Object> formInputs = new HashMap<>();
 
     @Override
     public void init()
@@ -41,16 +41,10 @@ public class FrontController extends HttpServlet {
     @Override
     public void doPost( HttpServletRequest request, HttpServletResponse response )
             throws IOException, ServletException {
-        // Extract form input values
-        Enumeration<String> names = request.getParameterNames();
-        while ( names.hasMoreElements() ) {
-            String name = names.nextElement();
-            this.formInputs.put( name, request.getParameter( name ) );
-        }
-
         processRequest( request, response );
     }
 
+    @SuppressWarnings( {"deprecation"} )
     protected void processRequest( HttpServletRequest request, HttpServletResponse response )
             throws IOException, ServletException {
         String url = request.getRequestURI(), // something like "/summer/<blab>/<...>"
@@ -62,49 +56,44 @@ public class FrontController extends HttpServlet {
             }
 
             Mapping mapping = this.URLMappings.get( route );
-            String controllerName = mapping.getControllerName(),
-                    methodName = mapping.getMethodName();
+            Method method = mapping.getMethod();
 
-            // Execute the method
-            Class<?> controllerClass = ScannerUtil.getControllerClass( controllerName );
-            Method method = controllerClass.getDeclaredMethod( methodName );
+            // Get the method params
+            List<String> methodParams = new ArrayList<>();
+            for ( Parameter parameter : method.getParameters() ) {
+                methodParams.add( ParamUtil.getParameterValue( parameter, request ) );
+            }
 
             // Display return value
-            @SuppressWarnings( "deprecation" ) Object returnValue = method.invoke( controllerClass.newInstance() );
-            displayValue( request, response, returnValue, controllerName, methodName );
+            Object returnValue = method.invoke(
+                    ScannerUtil.getControllerClass( mapping.getControllerName() ).newInstance(),
+                    methodParams.toArray()
+            );
+            displayValue( request, response, returnValue, mapping );
+            System.out.println( "---\n" );
 
-        } catch ( ClassNotFoundException | NoSuchMethodException | InstantiationException |
-                  IllegalAccessException | InvocationTargetException e ) {
+        } catch ( ClassNotFoundException | InstantiationException | IllegalAccessException |
+                  InvocationTargetException e ) {
             throw new ServletException( e );
         }
     }
 
     private void displayValue( HttpServletRequest request, HttpServletResponse response,
-                                      Object value, String controllerName, String methodName )
+                               Object value, Mapping mapping )
             throws IOException, ServletException {
         if ( value.getClass().getName().equals( ModelView.class.getName() ) ) {
-            ModelView mv = ( ModelView ) value;
-            String url = mv.getUrl(); // get the path to the view
-
-            for ( String key : mv.getData().keySet() ) { // send data in mv with the dispatcher
-                request.setAttribute( key, mv.getObject( key ) );
+            ModelView modelView = ( ModelView ) value;
+            for ( String key : modelView.getData().keySet() ) { // send data in mv with the dispatcher
+                request.setAttribute( key, modelView.getObject( key ) );
             }
 
-            // Send data from a <form> to the controller
-            if ( !this.formInputs.isEmpty() ) {
-                for ( String key : this.formInputs.keySet() ) {
-                    request.setAttribute( key, this.formInputs.get( key ) );
-                }
-                this.formInputs.clear();
-            }
-
-            RequestDispatcher dispatcher = request.getRequestDispatcher( url );
+            RequestDispatcher dispatcher = request.getRequestDispatcher( modelView.getUrl() );
             dispatcher.forward( request, response );
         } else {
             // Print [Controller - Method - returnValue]
             PrintWriter out = response.getWriter();
-            out.println( "Controller: " + controllerName );
-            out.println( "Method: " + methodName );
+            out.println( "Controller: " + mapping.getControllerName() );
+            out.println( "Method: " + mapping.getMethod().getName() );
             out.println( "Return Value: " + value );
         }
     }

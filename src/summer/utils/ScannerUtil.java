@@ -1,7 +1,6 @@
 package src.summer.utils;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.HashMap;
@@ -14,7 +13,7 @@ import src.summer.annotations.Controller;
 import src.summer.annotations.GetMapping;
 import src.summer.exception.SummerInitException;
 
-public class ScannerUtil {
+public abstract class ScannerUtil {
     public static HashMap<String, Mapping> scanControllers( String packageName )
             throws ServletException, ClassNotFoundException {
         HashMap<String, Mapping> URLMappings = new HashMap<>();
@@ -61,20 +60,21 @@ public class ScannerUtil {
             if ( clazz.isAnnotationPresent( Controller.class ) ) { // Verify if the class is annotated with @Controller
                 for ( Method method : clazz.getDeclaredMethods() ) {
                     if ( method.isAnnotationPresent( GetMapping.class ) ) { // Verify if the method is annotated with @GetMapping
-                        String url = method.getAnnotation( GetMapping.class ).urlMapping(), methodName = method.getName();
+                        String url = method.getAnnotation( GetMapping.class ).urlMapping(),
+                                methodName = method.getName();
 
                         // Verify if the URL is already in the HashMap
                         if ( URLMappings.containsKey( url ) ) {
                             Mapping mapping = URLMappings.get( url );
                             throw new SummerInitException( "\nURL \"" + url + "\" already exists in the URLMappings.\n"
-                                    + "Existing Mapping -> {\n \tclass: " + mapping.getControllerName() + " \n \tmethod: " + mapping.getMethodName() + " \n}\n"
+                                    + "Existing Mapping -> {\n \tclass: " + mapping.getControllerName() + " \n \tmethod: " + mapping.getMethod().getName() + " \n}\n"
                                     + "New Mapping -> {\n \tclass: " + className + " \n \tmethod: " + methodName + " \n}\n" );
                         }
 
                         // Verify the return type of the method
                         String returnTypeName = method.getReturnType().getName();
                         if ( returnTypeName.equals( String.class.getName() ) || returnTypeName.equals( ModelView.class.getName() ) ) {
-                            URLMappings.put( url, new Mapping( className, methodName ) );
+                            URLMappings.put( url, new Mapping( className, method ) );
                         } else
                             throw new SummerInitException( "Unsupported return type \"" + returnTypeName + "\" for method \"" + className + "." + methodName + "()\"" );
                     }

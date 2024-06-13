@@ -3,7 +3,7 @@ package src.summer.utils;
 import java.util.Arrays;
 import java.util.List;
 
-public class RouterUtil {
+public abstract class RouterUtil {
     public static String getRoute( String url ) {
         // Split url to a List<string> using "/" as a delimiter
         List<String> urlSegments = Arrays.asList( url.split( "/" ) );
