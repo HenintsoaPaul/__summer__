@@ -13,12 +13,14 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 
 public class FrontController extends HttpServlet {
     private HashMap<String, Mapping> URLMappings = new HashMap<>();
-    private HashMap<String, Object> formInputs = new HashMap<>();
 
     @Override
     public void init()
@@ -41,16 +43,10 @@ public class FrontController extends HttpServlet {
     @Override
     public void doPost( HttpServletRequest request, HttpServletResponse response )
             throws IOException, ServletException {
-        // Extract form input values
-        Enumeration<String> names = request.getParameterNames();
-        while ( names.hasMoreElements() ) {
-            String name = names.nextElement();
-            this.formInputs.put( name, request.getParameter( name ) );
-        }
-
         processRequest( request, response );
     }
 
+    @SuppressWarnings( {"deprecation"} )
     protected void processRequest( HttpServletRequest request, HttpServletResponse response )
             throws IOException, ServletException {
         String url = request.getRequestURI(), // something like "/summer/<blab>/<...>"
@@ -62,25 +58,47 @@ public class FrontController extends HttpServlet {
             }
 
             Mapping mapping = this.URLMappings.get( route );
-            String controllerName = mapping.getControllerName(),
-                    methodName = mapping.getMethodName();
+            String controllerName = mapping.getControllerName();
+            Method method = mapping.getMethod();
 
-            // Execute the method
+            // Get the method
             Class<?> controllerClass = ScannerUtil.getControllerClass( controllerName );
-            Method method = controllerClass.getDeclaredMethod( methodName );
+            List<String> methodParams = new ArrayList<>();
+
+            // Get method expected parameterNames
+            List<String> methodExpectedParamNames = new ArrayList<>();
+            System.out.println( "Expected params: " );
+            for ( Parameter parameter : method.getParameters() ) {
+                System.out.println( "- " + parameter.getName() );
+                methodExpectedParamNames.add( parameter.getName() );
+            }
+            System.out.println( "Expected param ---\n" );
+
+            // Get url params
+            Enumeration<String> urlParamNames = request.getParameterNames();
+            System.out.println( "Url params:" );
+            while ( urlParamNames.hasMoreElements() ) {
+                String param = urlParamNames.nextElement();
+                System.out.println( "- " + param );
+                if ( methodExpectedParamNames.contains( param ) ) {
+                    methodParams.add( request.getParameter( param ) );
+                }
+            }
+            System.out.println( "Url params ---\n" );
 
             // Display return value
-            @SuppressWarnings( "deprecation" ) Object returnValue = method.invoke( controllerClass.newInstance() );
-            displayValue( request, response, returnValue, controllerName, methodName );
+            Object returnValue = method.invoke( controllerClass.newInstance(), methodParams.toArray() );
+            displayValue( request, response, returnValue, mapping );
+            System.out.println( "---\n" );
 
-        } catch ( ClassNotFoundException | NoSuchMethodException | InstantiationException |
+        } catch ( ClassNotFoundException | InstantiationException |
                   IllegalAccessException | InvocationTargetException e ) {
             throw new ServletException( e );
         }
     }
 
     private void displayValue( HttpServletRequest request, HttpServletResponse response,
-                                      Object value, String controllerName, String methodName )
+                               Object value, Mapping mapping )
             throws IOException, ServletException {
         if ( value.getClass().getName().equals( ModelView.class.getName() ) ) {
             ModelView mv = ( ModelView ) value;
@@ -90,21 +108,13 @@ public class FrontController extends HttpServlet {
                 request.setAttribute( key, mv.getObject( key ) );
             }
 
-            // Send data from a <form> to the controller
-            if ( !this.formInputs.isEmpty() ) {
-                for ( String key : this.formInputs.keySet() ) {
-                    request.setAttribute( key, this.formInputs.get( key ) );
-                }
-                this.formInputs.clear();
-            }
-
             RequestDispatcher dispatcher = request.getRequestDispatcher( url );
             dispatcher.forward( request, response );
         } else {
             // Print [Controller - Method - returnValue]
             PrintWriter out = response.getWriter();
-            out.println( "Controller: " + controllerName );
-            out.println( "Method: " + methodName );
+            out.println( "Controller: " + mapping.getControllerName() );
+            out.println( "Method: " + mapping.getMethod().getName() );
             out.println( "Return Value: " + value );
         }
     }
