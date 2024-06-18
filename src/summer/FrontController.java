@@ -59,10 +59,8 @@ public class FrontController extends HttpServlet {
             Method method = mapping.getMethod();
 
             // Get the method params
-            List<String> methodParams = new ArrayList<>();
-            for ( Parameter parameter : method.getParameters() ) {
-                methodParams.add( ParamUtil.getParameterValue( parameter, request ) );
-            }
+            List<Object> methodParams = ParamUtil.getMethodParameterValues( method, request );
+            System.out.println("End method params---");
 
             // Display return value
             Object returnValue = method.invoke(
@@ -70,7 +68,7 @@ public class FrontController extends HttpServlet {
                     methodParams.toArray()
             );
             displayValue( request, response, returnValue, mapping );
-            System.out.println( "---\n" );
+            System.out.println( "Return value displayed---" );
 
         } catch ( ClassNotFoundException | InstantiationException | IllegalAccessException |
                   InvocationTargetException e ) {
