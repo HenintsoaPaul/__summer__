@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.util.*;
 
 public class FrontController extends HttpServlet {
@@ -64,14 +63,14 @@ public class FrontController extends HttpServlet {
 
             // Display return value
             Object returnValue = method.invoke(
-                    ScannerUtil.getControllerClass( mapping.getControllerName() ).newInstance(),
+                    ScannerUtil.getClass( mapping.getControllerName() ).newInstance(),
                     methodParams.toArray()
             );
             displayValue( request, response, returnValue, mapping );
             System.out.println( "Return value displayed---" );
 
-        } catch ( ClassNotFoundException | InstantiationException | IllegalAccessException |
-                  InvocationTargetException e ) {
+        } catch ( ClassNotFoundException | InstantiationException | IllegalAccessException | InvocationTargetException |
+                  NoSuchFieldException | NoSuchMethodException e ) {
             throw new ServletException( e );
         }
     }

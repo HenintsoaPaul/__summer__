@@ -100,3 +100,7 @@ public class FormController extends HttpServlet {
 
 ### Supported types
 `int`, `String`, `LocalDate`.
+
+### Passing Objects
+
+- Input Names must match object attributes names.
