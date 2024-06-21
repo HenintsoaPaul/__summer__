@@ -49,3 +49,58 @@ the package `src.summer.annotations` in the `summer-framework.jar`.
 ## ModelViews: Where should I place them?
 
 `ModelView`s must be placed in the root folder of the project.
+
+## Compilation
+
+During user's project compilation, the user must specify the parameter `-parameters`
+when running `javac ...` command.
+
+## Form
+
+### Binding form values in Controllers
+
+- Add input names as parameters of controller methods.
+
+- The name of the parameter must match the input name. Or, annotate the method
+with `@Param( name="<inputName>" )` to match it.
+
+- After that, dispatch to values to the `ModelView` using `ModelView.addObject()`.
+Input values are cast automatically by the controller of summer. Otherwise, it will
+throw an Exception.
+
+```html
+<h2>Simple Form</h2>
+<form action="myFormController" method="POST">
+    <div>
+        <label for="mail">Email: </label>
+        <input type="email" name="maily" id="mail" required>
+    </div>
+    <div>
+        <label for="pass">Login: </label>
+        <input type="password" name="passy" id="pass" required>
+    </div>
+    <div>
+        <input type="submit" value="Submit">
+    </div>
+</form>
+```
+
+```java
+@Controller
+public class FormController extends HttpServlet {
+    @GetMapping( urlMapping = "myFormController" )
+    public ModelView okForm( @Param( name = "maily" ) String emailaka, String passy ) {
+        ModelView mv = new ModelView( "/my-view.jsp", null );
+        mv.addObject( "email", emailaka );
+        mv.addObject( "passwork", passy );
+        return mv;
+    }
+}
+```
+
+### Supported types
+`int`, `String`, `LocalDate`.
+
+### Passing Objects
+
+- Input Names must match object attributes names.
