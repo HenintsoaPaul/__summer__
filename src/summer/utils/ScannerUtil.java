@@ -7,8 +7,8 @@ import java.util.HashMap;
 import java.util.Objects;
 
 import jakarta.servlet.ServletException;
-import src.summer.Mapping;
-import src.summer.ModelView;
+import src.summer.beans.Mapping;
+import src.summer.beans.ModelView;
 import src.summer.annotations.Controller;
 import src.summer.annotations.GetMapping;
 import src.summer.exception.SummerInitException;

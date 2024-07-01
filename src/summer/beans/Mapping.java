@@ -1,4 +1,4 @@
-package src.summer;
+package src.summer.beans;
 
 import java.lang.reflect.Method;
 
