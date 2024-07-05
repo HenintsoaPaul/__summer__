@@ -11,6 +11,7 @@ import src.summer.exception.SummerProcessException;
 import src.summer.utils.ParamUtil;
 import src.summer.utils.RouterUtil;
 import src.summer.utils.ScannerUtil;
+import src.summer.utils.SessionUtil;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -45,7 +46,7 @@ public class FrontController extends HttpServlet {
         processRequest( request, response );
     }
 
-    @SuppressWarnings( {"deprecation"} )
+    @SuppressWarnings( { "deprecation" } )
     protected void processRequest( HttpServletRequest request, HttpServletResponse response )
             throws IOException, ServletException {
         String url = request.getRequestURI(), // something like "/summer/<blab>/<...>"
@@ -61,7 +62,6 @@ public class FrontController extends HttpServlet {
 
             // Get the method params
             List<Object> methodParams = ParamUtil.getMethodParameterValues( method, request );
-            System.out.println( "End method params---" );
 
             // Instance creation
             Class<?> clazz = ScannerUtil.getClass( mapping.getControllerName() );
@@ -78,10 +78,8 @@ public class FrontController extends HttpServlet {
                     methodParams.toArray()
             );
             displayValue( request, response, returnValue, mapping );
-            System.out.println( "Return value displayed---" );
-
-        } catch ( ClassNotFoundException | InstantiationException | IllegalAccessException | InvocationTargetException |
-                  NoSuchFieldException | NoSuchMethodException e ) {
+        } catch ( ClassNotFoundException | InstantiationException | IllegalAccessException |
+                  InvocationTargetException | NoSuchFieldException | NoSuchMethodException e ) {
             throw new ServletException( e );
         }
     }

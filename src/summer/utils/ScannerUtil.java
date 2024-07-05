@@ -3,6 +3,8 @@ package src.summer.utils;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -17,7 +19,9 @@ public abstract class ScannerUtil {
     public static HashMap<String, Mapping> scanControllers( String packageName )
             throws ServletException, ClassNotFoundException {
         HashMap<String, Mapping> URLMappings = new HashMap<>();
-        File file = new File( getURLPackage( packageName ).getFile() );
+        String f = getURLPackage( packageName ).getFile();
+        File file = new File( URLDecoder.decode( f, StandardCharsets.UTF_8 ) );
+
         if ( file.isDirectory() ) {
             if ( Objects.requireNonNull( file.listFiles() ).length == 0 ) { // The package is empty.
                 throw new SummerInitException( "Directory \"" + file.getName() + "\" is empty." );

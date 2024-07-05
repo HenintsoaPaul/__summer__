@@ -16,10 +16,9 @@ public abstract class ParamUtil {
             NoSuchMethodException, ClassNotFoundException, SummerProcessException {
         List<Object> values = new ArrayList<>();
         for ( Parameter parameter : method.getParameters() ) {
-            if ( parameter.isAnnotationPresent( Param.class ) ) {
-                values.add( getParameterValue( parameter, request ) );
-            }
-            throw new SummerProcessException( "ETU2443 - Parameters must be annotated with \"@Param\"." );
+            if ( !parameter.isAnnotationPresent( Param.class ) )
+                throw new SummerProcessException( "ETU2443 - Parameters must be annotated with \"@Param\"." );
+            values.add( getParameterValue( parameter, request ) );
         }
         return values;
     }
