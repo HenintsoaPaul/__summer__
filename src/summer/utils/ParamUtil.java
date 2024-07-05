@@ -2,7 +2,6 @@ package src.summer.utils;
 
 import jakarta.servlet.http.HttpServletRequest;
 import src.summer.annotations.Param;
-import src.summer.beans.SummerSession;
 import src.summer.exception.SummerProcessException;
 
 import java.lang.reflect.Field;
@@ -19,14 +18,8 @@ public abstract class ParamUtil {
         for ( Parameter parameter : method.getParameters() ) {
             if ( parameter.isAnnotationPresent( Param.class ) ) {
                 values.add( getParameterValue( parameter, request ) );
-            } else {
-                if ( parameter.getType().getName().equals( SummerSession.class.getName() ) ) {
-                    HashMap<String, Object> map = SessionUtil.sessionToMap( request.getSession() );
-                    values.add( new SummerSession( map ) );
-                } else {
-                    throw new SummerProcessException( "ETU2443 - Parameters must be annotated with \"@Param\"." );
-                }
             }
+            throw new SummerProcessException( "ETU2443 - Parameters must be annotated with \"@Param\"." );
         }
         return values;
     }
