@@ -1,19 +1,14 @@
 package src.summer;
 
-import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import src.summer.beans.Mapping;
-import src.summer.beans.ModelView;
 import src.summer.exception.SummerProcessException;
-import src.summer.utils.ParamUtil;
-import src.summer.utils.RouterUtil;
-import src.summer.utils.ScannerUtil;
+import src.summer.utils.*;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -45,7 +40,7 @@ public class FrontController extends HttpServlet {
         processRequest( request, response );
     }
 
-    @SuppressWarnings( {"deprecation"} )
+    @SuppressWarnings( { "deprecation" } )
     protected void processRequest( HttpServletRequest request, HttpServletResponse response )
             throws IOException, ServletException {
         String url = request.getRequestURI(), // something like "/summer/<blab>/<...>"
@@ -59,41 +54,24 @@ public class FrontController extends HttpServlet {
             Mapping mapping = this.URLMappings.get( route );
             Method method = mapping.getMethod();
 
-            // Get the method params
-            List<Object> methodParams = ParamUtil.getMethodParameterValues( method, request );
-            System.out.println("End method params---");
+            // Instance creation
+            Class<?> clazz = ScannerUtil.getClass( mapping.getControllerName() );
+            Object newInstance = clazz.newInstance();
 
-            // Display return value
-            Object returnValue = method.invoke(
-                    ScannerUtil.getClass( mapping.getControllerName() ).newInstance(),
-                    methodParams.toArray()
-            );
-            displayValue( request, response, returnValue, mapping );
-            System.out.println( "Return value displayed---" );
-
-        } catch ( ClassNotFoundException | InstantiationException | IllegalAccessException | InvocationTargetException |
-                  NoSuchFieldException | NoSuchMethodException e ) {
-            throw new ServletException( e );
-        }
-    }
-
-    private void displayValue( HttpServletRequest request, HttpServletResponse response,
-                               Object value, Mapping mapping )
-            throws IOException, ServletException {
-        if ( value.getClass().getName().equals( ModelView.class.getName() ) ) {
-            ModelView modelView = ( ModelView ) value;
-            for ( String key : modelView.getData().keySet() ) { // send data in mv with the dispatcher
-                request.setAttribute( key, modelView.getObject( key ) );
+            // Session Injection
+            if ( SessionUtil.containsSummerSession( clazz ) ) {
+                SessionUtil.injectSession( newInstance, request.getSession() );
             }
 
-            RequestDispatcher dispatcher = request.getRequestDispatcher( modelView.getUrl() );
-            dispatcher.forward( request, response );
-        } else {
-            // Print [Controller - Method - returnValue]
-            PrintWriter out = response.getWriter();
-            out.println( "Controller: " + mapping.getControllerName() );
-            out.println( "Method: " + mapping.getMethod().getName() );
-            out.println( "Return Value: " + value );
+            // Get the method params
+            List<Object> methodParams = ParamUtil.getMethodParameterValues( method, request );
+
+            // Display return value
+            Object value = method.invoke( newInstance, methodParams.toArray() );
+            ViewUtil.show( value, mapping, request, response );
+        } catch ( ClassNotFoundException | InstantiationException | IllegalAccessException |
+                  InvocationTargetException | NoSuchFieldException | NoSuchMethodException e ) {
+            throw new ServletException( e );
         }
     }
 }
