@@ -40,11 +40,12 @@ the package `src.summer.annotations` in the `summer-framework.jar`.
 
 - Make sure your method is in a class annotated with `@Controller`.
 
-- Annotate your method with `@GetMapping(<myMapping>)` annotation of 
-the package `src.summer.annotations` in the `summer-framework.jar`.
-`myMapping` is a string representing the URL you want to be listened to.
+- Annotate your method with `@GetMapping(<myMapping>)`.`myMapping` is a string 
+representing the URL you want to be listened to.
 
-- Controller method possible return types are `String` or `ModelView`.
+- Controller methods' possible return types are `String` or `ModelView`.
+
+- Controller methods' parameters must be annotated with `@Param(<myParam>)`.
 
 ## ModelViews: Where should I place them?
 
@@ -59,14 +60,13 @@ when running `javac ...` command.
 
 ### Binding form values in Controllers
 
-- Add input names as parameters of controller methods.
+- Add input names as parameters of controller methods. All parameters of the method must be
+annotated with `@Param( name="<inputName>"" )`. If it ain't the case, there will be an exception.
 
-- The name of the parameter must match the input name. Or, annotate the method
-with `@Param( name="<inputName>" )` to match it.
+- Dispatch the values to the `ModelView` using `ModelView.addObject()`. 
 
-- After that, dispatch to values to the `ModelView` using `ModelView.addObject()`.
-Input values are cast automatically by the controller of summer. Otherwise, it will
-throw an Exception.
+- Input values are cast automatically by the controller of summer. Otherwise, 
+it will throw an Exception.
 
 ```html
 <h2>Simple Form</h2>
@@ -104,3 +104,46 @@ public class FormController extends HttpServlet {
 ### Passing Objects
 
 - Input Names must match object attributes names.
+
+## Session
+
+- To use Session in a `@Controller` class, you need to add a field `SummerSession`
+to your class.
+
+```java
+import jakarta.servlet.http.HttpServlet;
+import src.summer.annotations.Controller;
+import src.summer.beans.SummerSession;
+
+@Controller
+public class YourController extends HttpServlet {
+    SummerSession summerSession;
+
+    // your methods ...
+}
+```
+
+- To use Session in a view, you need to dispatch the `SummerSession` of your
+controller to your `ModelView`.
+
+```java
+import jakarta.servlet.http.HttpServlet;
+import src.summer.annotations.Controller;
+import src.summer.beans.ModelView;
+import src.summer.beans.SummerSession;
+import src.summer.exception.SummerSessionException;
+
+@Controller
+public class YourController extends HttpServlet {
+    SummerSession summerSession;
+
+    @GetMapping( urlMapping = "auth" )
+    public ModelView authentication( @Param( name = "inp_login" ) String login,
+                                     @Param( name = "inp_password" ) String password )
+            throws SummerSessionException {
+        HashMap<String, Object> map = new HashMap<>();
+        map.put( "login", login );
+        return new ModelView( "my-view.jsp", map );
+    }
+}
+```
