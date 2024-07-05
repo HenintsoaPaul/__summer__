@@ -61,11 +61,20 @@ public class FrontController extends HttpServlet {
 
             // Get the method params
             List<Object> methodParams = ParamUtil.getMethodParameterValues( method, request );
-            System.out.println("End method params---");
+            System.out.println( "End method params---" );
+
+            // Instance creation
+            Class<?> clazz = ScannerUtil.getClass( mapping.getControllerName() );
+            Object newInstance = clazz.newInstance();
+
+            // Session Injection
+            if ( SessionUtil.containsSummerSession( clazz ) ) {
+                SessionUtil.injectSession( newInstance, request.getSession() );
+            }
 
             // Display return value
             Object returnValue = method.invoke(
-                    ScannerUtil.getClass( mapping.getControllerName() ).newInstance(),
+                    newInstance,
                     methodParams.toArray()
             );
             displayValue( request, response, returnValue, mapping );
