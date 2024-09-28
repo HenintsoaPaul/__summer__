@@ -16,7 +16,9 @@ And... That is it. Normally, after completing those steps, you can use `summer`
 framework in any java project. Happy coding...😊😉
 
 
-## Controllers: How to create Controllers?
+## Controllers
+
+### How to create Controllers?
 
 - Create a folder for your controllers like `controllers_dir`.
 
@@ -34,7 +36,9 @@ of your project like the following:
 the package `src.summer.annotations` in the `summer-framework.jar`.
 
 
-## Controller Methods: How to map a method in a Controller to listen to a URL?
+### Controller Methods
+
+#### How to map a method in a Controller to listen to a URL?
 
 - Make sure you have configured the controller folder in the `web.xml` file.
 
@@ -46,6 +50,12 @@ representing the URL you want to be listened to.
 - Controller methods' possible return types are `String` or `ModelView`.
 
 - Controller methods' parameters must be annotated with `@Param(<myParam>)`.
+
+#### How to return a JSON?
+
+- Annotate your method with `@RestApi`.
+
+- The return type can be of any type.
 
 ## ModelViews: Where should I place them?
 
