@@ -1,5 +1,6 @@
 package src.summer.utils;
 
+import com.google.gson.Gson;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -11,17 +12,18 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 public abstract class ViewUtil {
+    /**
+     * This method handle the way we display the value object.
+     * If String of JSON, just print it.
+     * If ModelView, use its method.
+     */
     public static void show( Object value, Mapping mapping, HttpServletRequest request, HttpServletResponse response )
             throws ServletException, IOException {
-        if ( isInstance( value ) ) {
+        if ( ModelViewUtil.isInstance( value ) ) {
             display( value, request, response );
         } else {
             print( mapping, value, response.getWriter() );
         }
-    }
-
-    private static boolean isInstance( Object instance ) {
-        return instance.getClass().getName().equals( ModelView.class.getName() );
     }
 
     private static void print( Mapping mapping, Object value, PrintWriter out ) {
@@ -30,6 +32,24 @@ public abstract class ViewUtil {
         out.println( "Return Value: " + value );
     }
 
+    public static void printJson( Object value, HttpServletResponse response )
+            throws IOException {
+        response.setContentType( "application/json" );
+        String myJson = new Gson().toJson( value );
+        PrintWriter out = response.getWriter();
+        out.print( myJson );
+    }
+
+    private static void display( Object instance, HttpServletRequest request, HttpServletResponse response )
+            throws ServletException, IOException {
+        ModelView mv = ( ModelView ) instance;
+        dispatchData( request, response, mv );
+    }
+
+    /**
+     * Dispatch data from the ModelView to the request object.
+     * Then use dispatcher.forward(req, resp).
+     */
     private static void dispatchData( HttpServletRequest request, HttpServletResponse response, ModelView mv )
             throws ServletException, IOException {
         for ( String key : mv.getData().keySet() ) {
@@ -37,11 +57,5 @@ public abstract class ViewUtil {
         }
         RequestDispatcher dispatcher = request.getRequestDispatcher( mv.getUrl() );
         dispatcher.forward( request, response );
-    }
-
-    private static void display( Object instance, HttpServletRequest request, HttpServletResponse response )
-            throws ServletException, IOException {
-        ModelView mv = (ModelView) instance;
-        dispatchData( request, response, mv );
     }
 }
