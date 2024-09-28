@@ -4,7 +4,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import src.summer.annotations.RestApi;
 import src.summer.beans.Mapping;
+import src.summer.beans.ModelView;
 import src.summer.exception.SummerProcessException;
 import src.summer.utils.*;
 
@@ -14,6 +16,9 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 public class FrontController extends HttpServlet {
+    /**
+     * Map contenant la liste reliant chaque route a un object Mapping
+     */
     private HashMap<String, Mapping> URLMappings = new HashMap<>();
 
     @Override
@@ -65,10 +70,16 @@ public class FrontController extends HttpServlet {
 
             // Get the method params
             List<Object> methodParams = ParamUtil.getMethodParameterValues( method, request );
-
-            // Display return value
             Object value = method.invoke( newInstance, methodParams.toArray() );
-            ViewUtil.show( value, mapping, request, response );
+
+            // Verify the method is annotated with '@Rest'
+            if ( method.isAnnotationPresent( RestApi.class ) ) { // If true, show JSON
+                Object jsonValue = ModelViewUtil.isInstance( value ) ?
+                        ( ( ModelView ) value ).getData() : value;
+                ViewUtil.printJson( jsonValue, response );
+            } else { // Else, show value(String or ModelView)
+                ViewUtil.show( value, mapping, request, response );
+            }
         } catch ( ClassNotFoundException | InstantiationException | IllegalAccessException |
                   InvocationTargetException | NoSuchFieldException | NoSuchMethodException e ) {
             throw new ServletException( e );
