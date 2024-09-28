@@ -10,12 +10,19 @@ public abstract class TypeUtil {
         }
 
         Optional<String> stringValue = Optional.ofNullable( ( String ) value ).map( String::valueOf );
-        return switch ( clazz.getSimpleName().toLowerCase() ) {
-            case "string" -> stringValue.orElse( null );
-            case "localdate" -> LocalDate.parse( stringValue.orElse( "" ) );
-            case "integer", "int" -> Integer.valueOf( stringValue.orElse( "0" ) );
-            case "double", "float" -> Double.valueOf( stringValue.orElse( "0.0" ) );
-            default -> throw new IllegalArgumentException( "Unsupported type: " + clazz );
-        };
+        switch ( clazz.getSimpleName().toLowerCase() ) {
+            case "string":
+                return stringValue.orElse( null );
+            case "localdate":
+                return LocalDate.parse( stringValue.orElse( "" ) );
+            case "integer":
+            case "int":
+                return Integer.valueOf( stringValue.orElse( "0" ) );
+            case "double":
+            case "float":
+                return Double.valueOf( stringValue.orElse( "0.0" ) );
+            default:
+                throw new IllegalArgumentException( "Unsupported type: " + clazz );
+        }
     }
 }

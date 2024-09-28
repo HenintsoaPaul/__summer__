@@ -1,6 +1,7 @@
 package src.summer.utils;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -8,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Objects;
 
-import jakarta.servlet.ServletException;
+import javax.servlet.ServletException;
 import src.summer.beans.Mapping;
 import src.summer.beans.ModelView;
 import src.summer.annotations.Controller;
@@ -17,10 +18,10 @@ import src.summer.exception.SummerInitException;
 
 public abstract class ScannerUtil {
     public static HashMap<String, Mapping> scanControllers( String packageName )
-            throws ServletException, ClassNotFoundException {
+            throws ServletException, ClassNotFoundException, UnsupportedEncodingException {
         HashMap<String, Mapping> URLMappings = new HashMap<>();
         String f = getURLPackage( packageName ).getFile();
-        File file = new File( URLDecoder.decode( f, StandardCharsets.UTF_8 ) );
+        File file = new File( URLDecoder.decode( f, String.valueOf( StandardCharsets.UTF_8 ) ) );
 
         if ( file.isDirectory() ) {
             if ( Objects.requireNonNull( file.listFiles() ).length == 0 ) { // The package is empty.

@@ -1,6 +1,6 @@
 package src.summer.beans;
 
-import jakarta.servlet.http.HttpSession;
+import javax.servlet.http.HttpSession;
 import src.summer.exception.SummerSessionException;
 
 public class SummerSession {
