@@ -15,8 +15,17 @@ import src.summer.beans.ModelView;
 import src.summer.annotations.Controller;
 import src.summer.annotations.GetMapping;
 import src.summer.exception.SummerInitException;
+import src.summer.exception.URLMappingException;
 
 public abstract class ScannerUtil {
+    /**
+     * Scan all controllers in the `packageName` folder.
+     *
+     * @param packageName Path to the folder containing the controllers.
+     * @return
+     * @throws ServletException
+     * @throws ClassNotFoundException
+     */
     public static HashMap<String, Mapping> scanControllers( String packageName )
             throws ServletException, ClassNotFoundException, UnsupportedEncodingException {
         HashMap<String, Mapping> URLMappings = new HashMap<>();
@@ -56,6 +65,13 @@ public abstract class ScannerUtil {
         }
     }
 
+    /**
+     * Scanner un fichier. Si c'est une classe java annotee avec @Controller, on boucle ses methodes.
+     * On ajoute les methodes annotes @GetMapping dans le map URLMappings. Il n'y a pas de doublons.
+     *
+     * @throws URLMappingException Si plusieurs methods ecoutent sur le meme URL.
+     * @throws SummerInitException Si le type de retour de la methode est autre que String ou ModelView.
+     */
     private static void scanFile( File file, String packageName, HashMap<String, Mapping> URLMappings )
             throws ClassNotFoundException, SummerInitException {
         if ( file.getName().endsWith( ".class" ) ) {
@@ -71,7 +87,7 @@ public abstract class ScannerUtil {
                         // Verify if the URL is already in the HashMap
                         if ( URLMappings.containsKey( url ) ) {
                             Mapping mapping = URLMappings.get( url );
-                            throw new SummerInitException( "\nURL \"" + url + "\" already exists in the URLMappings.\n"
+                            throw new URLMappingException( "\nURL \"" + url + "\" already exists in the URLMappings.\n"
                                     + "Existing Mapping -> {\n \tclass: " + mapping.getControllerName() + " \n \tmethod: " + mapping.getMethod().getName() + " \n}\n"
                                     + "New Mapping -> {\n \tclass: " + className + " \n \tmethod: " + methodName + " \n}\n" );
                         }
@@ -88,6 +104,13 @@ public abstract class ScannerUtil {
         }
     }
 
+    /**
+     * Return the class of a Controller a partir de son nom.
+     *
+     * @param controllerName
+     * @return
+     * @throws ClassNotFoundException
+     */
     public static Class<?> getClass( String controllerName )
             throws ClassNotFoundException {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
