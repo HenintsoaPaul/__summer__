@@ -1,6 +1,6 @@
 package src.summer.exception;
 
-import jakarta.servlet.ServletException;
+import javax.servlet.ServletException;
 
 public class SummerInitException extends ServletException {
     public SummerInitException( String message ) {

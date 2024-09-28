@@ -1,6 +1,6 @@
 package src.summer.utils;
 
-import jakarta.servlet.http.HttpSession;
+import javax.servlet.http.HttpSession;
 import src.summer.beans.SummerSession;
 
 import java.lang.reflect.Field;

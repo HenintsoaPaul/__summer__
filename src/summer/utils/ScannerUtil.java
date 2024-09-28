@@ -1,6 +1,7 @@
 package src.summer.utils;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -8,19 +9,28 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Objects;
 
-import jakarta.servlet.ServletException;
+import javax.servlet.ServletException;
 import src.summer.beans.Mapping;
 import src.summer.beans.ModelView;
 import src.summer.annotations.Controller;
 import src.summer.annotations.GetMapping;
 import src.summer.exception.SummerInitException;
+import src.summer.exception.URLMappingException;
 
 public abstract class ScannerUtil {
+    /**
+     * Scan all controllers in the `packageName` folder.
+     *
+     * @param packageName Path to the folder containing the controllers.
+     * @return
+     * @throws ServletException
+     * @throws ClassNotFoundException
+     */
     public static HashMap<String, Mapping> scanControllers( String packageName )
-            throws ServletException, ClassNotFoundException {
+            throws ServletException, ClassNotFoundException, UnsupportedEncodingException {
         HashMap<String, Mapping> URLMappings = new HashMap<>();
         String f = getURLPackage( packageName ).getFile();
-        File file = new File( URLDecoder.decode( f, StandardCharsets.UTF_8 ) );
+        File file = new File( URLDecoder.decode( f, String.valueOf( StandardCharsets.UTF_8 ) ) );
 
         if ( file.isDirectory() ) {
             if ( Objects.requireNonNull( file.listFiles() ).length == 0 ) { // The package is empty.
@@ -55,6 +65,13 @@ public abstract class ScannerUtil {
         }
     }
 
+    /**
+     * Scan a file. If annotated with @Controller, we loop its methods. We add methods annotated
+     * @GetMapping to URLMapping hashMap.
+     *
+     * @throws URLMappingException When there are two or more methods listing on the same URL.
+     * @throws SummerInitException When the return type of @GetMapping method is neither String nor ModelView.
+     */
     private static void scanFile( File file, String packageName, HashMap<String, Mapping> URLMappings )
             throws ClassNotFoundException, SummerInitException {
         if ( file.getName().endsWith( ".class" ) ) {
@@ -70,7 +87,7 @@ public abstract class ScannerUtil {
                         // Verify if the URL is already in the HashMap
                         if ( URLMappings.containsKey( url ) ) {
                             Mapping mapping = URLMappings.get( url );
-                            throw new SummerInitException( "\nURL \"" + url + "\" already exists in the URLMappings.\n"
+                            throw new URLMappingException( "\nURL \"" + url + "\" already exists in the URLMappings.\n"
                                     + "Existing Mapping -> {\n \tclass: " + mapping.getControllerName() + " \n \tmethod: " + mapping.getMethod().getName() + " \n}\n"
                                     + "New Mapping -> {\n \tclass: " + className + " \n \tmethod: " + methodName + " \n}\n" );
                         }
@@ -87,6 +104,13 @@ public abstract class ScannerUtil {
         }
     }
 
+    /**
+     * Look for a @Controller class named controllerName.
+     *
+     * @param controllerName
+     * @return
+     * @throws ClassNotFoundException
+     */
     public static Class<?> getClass( String controllerName )
             throws ClassNotFoundException {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();

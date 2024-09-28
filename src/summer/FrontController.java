@@ -1,10 +1,12 @@
 package src.summer;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import src.summer.annotations.RestApi;
 import src.summer.beans.Mapping;
+import src.summer.beans.ModelView;
 import src.summer.exception.SummerProcessException;
 import src.summer.utils.*;
 
@@ -14,6 +16,9 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 public class FrontController extends HttpServlet {
+    /**
+     * Map containing the Mapping objects matching to their URLs.
+     */
     private HashMap<String, Mapping> URLMappings = new HashMap<>();
 
     @Override
@@ -40,7 +45,6 @@ public class FrontController extends HttpServlet {
         processRequest( request, response );
     }
 
-    @SuppressWarnings( { "deprecation" } )
     protected void processRequest( HttpServletRequest request, HttpServletResponse response )
             throws IOException, ServletException {
         String url = request.getRequestURI(), // something like "/summer/<blab>/<...>"
@@ -65,10 +69,16 @@ public class FrontController extends HttpServlet {
 
             // Get the method params
             List<Object> methodParams = ParamUtil.getMethodParameterValues( method, request );
-
-            // Display return value
             Object value = method.invoke( newInstance, methodParams.toArray() );
-            ViewUtil.show( value, mapping, request, response );
+
+            // Verify the method is annotated with '@Rest'
+            if ( method.isAnnotationPresent( RestApi.class ) ) { // If true, show JSON
+                Object jsonValue = ModelViewUtil.isInstance( value ) ?
+                        ( ( ModelView ) value ).getData() : value;
+                ViewUtil.printJson( jsonValue, response );
+            } else { // Else, show value(String or ModelView)
+                ViewUtil.show( value, mapping, request, response );
+            }
         } catch ( ClassNotFoundException | InstantiationException | IllegalAccessException |
                   InvocationTargetException | NoSuchFieldException | NoSuchMethodException e ) {
             throw new ServletException( e );
