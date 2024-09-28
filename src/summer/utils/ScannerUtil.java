@@ -66,11 +66,11 @@ public abstract class ScannerUtil {
     }
 
     /**
-     * Scanner un fichier. Si c'est une classe java annotee avec @Controller, on boucle ses methodes.
-     * On ajoute les methodes annotes @GetMapping dans le map URLMappings. Il n'y a pas de doublons.
+     * Scan a file. If annotated with @Controller, we loop its methods. We add methods annotated
+     * @GetMapping to URLMapping hashMap.
      *
-     * @throws URLMappingException Si plusieurs methods ecoutent sur le meme URL.
-     * @throws SummerInitException Si le type de retour de la methode est autre que String ou ModelView.
+     * @throws URLMappingException When there are two or more methods listing on the same URL.
+     * @throws SummerInitException When the return type of @GetMapping method is neither String nor ModelView.
      */
     private static void scanFile( File file, String packageName, HashMap<String, Mapping> URLMappings )
             throws ClassNotFoundException, SummerInitException {
@@ -105,7 +105,7 @@ public abstract class ScannerUtil {
     }
 
     /**
-     * Return the class of a Controller a partir de son nom.
+     * Look for a @Controller class named controllerName.
      *
      * @param controllerName
      * @return

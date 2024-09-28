@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="SummerFrameworkBuild" default="build" basedir=".">
+
+    <property name="work.dir" value="D:/ITU/s4/INF209-WebDyn/summer/__summer__/"/>
+    <property name="lib.dir" value="${work.dir}/lib"/>
+    <property name="src.dir" value="${work.dir}/src"/>
+    <property name="temp.dir" value="${work.dir}/src_temp"/>
+    <property name="target.dir" value="${work.dir}/out"/>
+    <property name="manifest.file" value="${target.dir}/MANIFEST.MF"/>
+
+    <path id="compile.classpath">
+        <fileset dir="${lib.dir}">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
+
+    <target name="clean-temp">
+        <delete dir="${temp.dir}"/>
+        <delete dir="${target.dir}"/>
+    </target>
+
+    <target name="create-temp-dir" depends="clean-temp">
+        <mkdir dir="${temp.dir}"/>
+        <mkdir dir="${target.dir}"/>
+    </target>
+
+    <target name="copy-java-files" depends="create-temp-dir">
+        <copy todir="${temp.dir}">
+            <fileset dir="${src.dir}" excludes="Main.java"/>
+        </copy>
+    </target>
+
+    <target name="compile-java" depends="copy-java-files">
+        <javac srcdir="${temp.dir}" destdir="${target.dir}" classpathref="compile.classpath" includeantruntime="false">
+        </javac>
+    </target>
+
+
+    <target name="create-manifest" depends="compile-java">
+        <touch file="${manifest.file}"/>
+        <echo message="Manifest-Version: 1.0&#xA;&#xA;Built-By: Henintsoa Paul MANITRAJA" file="${manifest.file}"
+              append="true"/>
+    </target>
+
+    <target name="create-jar" depends="create-manifest">
+        <jar destfile="${work.dir}/summer-framework.jar" basedir="${target.dir}"/>
+    </target>
+
+
+    <target name="clean" depends="create-temp-dir, copy-java-files, compile-java, create-manifest, create-jar">
+        <delete dir="${temp.dir}"/>
+        <delete dir="${target.dir}"/>
+        <delete file="${manifest.file}"/>
+        <echo message="Clean done."/>
+    </target>
+
+    <target name="build" depends="clean">
+        <echo message="Build done."/>
+    </target>
+</project>

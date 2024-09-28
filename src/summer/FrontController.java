@@ -17,7 +17,7 @@ import java.util.*;
 
 public class FrontController extends HttpServlet {
     /**
-     * Map contenant la liste reliant chaque route a un object Mapping
+     * Map containing the Mapping objects matching to their URLs.
      */
     private HashMap<String, Mapping> URLMappings = new HashMap<>();
 
@@ -45,7 +45,6 @@ public class FrontController extends HttpServlet {
         processRequest( request, response );
     }
 
-    @SuppressWarnings( { "deprecation" } )
     protected void processRequest( HttpServletRequest request, HttpServletResponse response )
             throws IOException, ServletException {
         String url = request.getRequestURI(), // something like "/summer/<blab>/<...>"

@@ -13,7 +13,7 @@ import java.util.*;
 public abstract class ParamUtil {
     public static List<Object> getMethodParameterValues( Method method, HttpServletRequest request )
             throws NoSuchFieldException, InvocationTargetException, InstantiationException, IllegalAccessException,
-            NoSuchMethodException, ClassNotFoundException, SummerProcessException {
+            NoSuchMethodException, SummerProcessException {
         List<Object> values = new ArrayList<>();
         for ( Parameter parameter : method.getParameters() ) {
             if ( !parameter.isAnnotationPresent( Param.class ) )
