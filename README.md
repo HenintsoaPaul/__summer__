@@ -6,7 +6,7 @@ Creation of a java framework based on spring-framework.
 
 - Clone from the project from GitHub.
 
-- Run `build.ps1` in powershell. That will create `summer-framework.jar`.
+- Run `build.xml` in powershell. That will create `summer-framework.jar`.
 
 - Add `summer-framework.jar` in the `lib/` folder of your working directory.
  

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="SummerFrameworkBuild" default="build" basedir=".">
+<project name="SummerFrameworkBuild" default="clean-temp" basedir=".">
 
-    <property name="work.dir" value="D:/ITU/s4/INF209-WebDyn/summer/__summer__/"/>
+    <property name="work.dir" value="${basedir}"/>
     <property name="lib.dir" value="${work.dir}/lib"/>
     <property name="src.dir" value="${work.dir}/src"/>
     <property name="temp.dir" value="${work.dir}/src_temp"/>
@@ -54,7 +54,10 @@
         <echo message="Clean done."/>
     </target>
 
-    <target name="build" depends="clean">
+    <target name="deploy" depends="clean">
+<!--        <copy todir="${temp.dir}">-->
+<!--            <fileset dir="${src.dir}" excludes="Main.java"/>-->
+<!--        </copy>-->
         <echo message="Build done."/>
     </target>
 </project>

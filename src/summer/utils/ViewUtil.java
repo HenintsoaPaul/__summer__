@@ -28,6 +28,7 @@ public abstract class ViewUtil {
 
     private static void print( Mapping mapping, Object value, PrintWriter out ) {
         out.println( "Controller: " + mapping.getControllerName() );
+        out.println( "Verb: " + mapping.getUrlVerb() );
         out.println( "Method: " + mapping.getMethod().getName() );
         out.println( "Return Value: " + value );
     }

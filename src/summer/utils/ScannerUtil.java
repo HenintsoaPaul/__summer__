@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.Objects;
 
 import javax.servlet.ServletException;
+
+import src.summer.annotations.Post;
 import src.summer.beans.Mapping;
 import src.summer.beans.ModelView;
 import src.summer.annotations.Controller;
@@ -67,7 +69,7 @@ public abstract class ScannerUtil {
 
     /**
      * Scan a file. If annotated with @Controller, we loop its methods. We add methods annotated
-     * @GetMapping to URLMapping hashMap.
+     * @UrlMapping to URLMapping hashMap.
      *
      * @throws URLMappingException When there are two or more methods listing on the same URL.
      * @throws SummerInitException When the return type of @GetMapping method is neither String nor ModelView.
@@ -95,7 +97,14 @@ public abstract class ScannerUtil {
                         // Verify the return type of the method
                         String returnTypeName = method.getReturnType().getName();
                         if ( returnTypeName.equals( String.class.getName() ) || returnTypeName.equals( ModelView.class.getName() ) ) {
-                            URLMappings.put( url, new Mapping( className, method ) );
+
+//                            Get whether it is POST or GET
+                            String urlVerb = "GET";
+                            if ( method.isAnnotationPresent( Post.class ) ) {
+                                urlVerb = "POST";
+                            }
+
+                            URLMappings.put( url, new Mapping( className, urlVerb, method ) );
                         } else
                             throw new SummerInitException( "Unsupported return type \"" + returnTypeName + "\" for method \"" + className + "." + methodName + "()\"" );
                     }

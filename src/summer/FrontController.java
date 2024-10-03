@@ -4,6 +4,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import src.summer.annotations.RestApi;
 import src.summer.beans.Mapping;
 import src.summer.beans.ModelView;
@@ -56,6 +57,13 @@ public class FrontController extends HttpServlet {
             }
 
             Mapping mapping = this.URLMappings.get( route );
+
+            // Verify the route matchs the verb (isPOST, isGET)
+            String verb = request.getMethod();
+            if ( !verb.equals( mapping.getUrlVerb() ) ) {
+                throw new SummerProcessException( "Invalid verb \"" + verb + "\" for this URL." );
+            }
+
             Method method = mapping.getMethod();
 
             // Instance creation
