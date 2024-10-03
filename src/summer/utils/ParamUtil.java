@@ -11,6 +11,10 @@ import java.lang.reflect.Parameter;
 import java.util.*;
 
 public abstract class ParamUtil {
+    /**
+     * Return a list of the values of the args required by the method
+     * that are contained in the request object.
+     */
     public static List<Object> getMethodParameterValues( Method method, HttpServletRequest request )
             throws NoSuchFieldException, InvocationTargetException, InstantiationException, IllegalAccessException,
             NoSuchMethodException, SummerProcessException {

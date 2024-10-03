@@ -13,7 +13,7 @@ import javax.servlet.ServletException;
 import src.summer.beans.Mapping;
 import src.summer.beans.ModelView;
 import src.summer.annotations.Controller;
-import src.summer.annotations.GetMapping;
+import src.summer.annotations.UrlMapping;
 import src.summer.exception.SummerInitException;
 import src.summer.exception.URLMappingException;
 
@@ -80,8 +80,8 @@ public abstract class ScannerUtil {
 
             if ( clazz.isAnnotationPresent( Controller.class ) ) { // Verify if the class is annotated with @Controller
                 for ( Method method : clazz.getDeclaredMethods() ) {
-                    if ( method.isAnnotationPresent( GetMapping.class ) ) { // Verify if the method is annotated with @GetMapping
-                        String url = method.getAnnotation( GetMapping.class ).urlMapping(),
+                    if ( method.isAnnotationPresent( UrlMapping.class ) ) { // Verify if the method is annotated with @GetMapping
+                        String url = method.getAnnotation( UrlMapping.class ).url(),
                                 methodName = method.getName();
 
                         // Verify if the URL is already in the HashMap

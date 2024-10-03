@@ -44,7 +44,7 @@ the package `src.summer.annotations` in the `summer-framework.jar`.
 
 - Make sure your method is in a class annotated with `@Controller`.
 
-- Annotate your method with `@GetMapping(<myMapping>)`.`myMapping` is a string 
+- Annotate your method with `@UrlMapping(<myMapping>)`.`myMapping` is a string 
 representing the URL you want to be listened to.
 
 - Controller methods' possible return types are `String` or `ModelView`.
@@ -98,7 +98,7 @@ it will throw an Exception.
 ```java
 @Controller
 public class FormController extends HttpServlet {
-    @GetMapping( urlMapping = "myFormController" )
+    @UrlMapping( urlMapping = "myFormController" )
     public ModelView okForm( @Param( name = "maily" ) String emailaka, String passy ) {
         ModelView mv = new ModelView( "/my-view.jsp", null );
         mv.addObject( "email", emailaka );
@@ -147,7 +147,7 @@ import src.summer.exception.SummerSessionException;
 public class YourController extends HttpServlet {
     SummerSession summerSession;
 
-    @GetMapping( urlMapping = "auth" )
+    @UrlMapping( urlMapping = "auth" )
     public ModelView authentication( @Param( name = "inp_login" ) String login,
                                      @Param( name = "inp_password" ) String password )
             throws SummerSessionException {
