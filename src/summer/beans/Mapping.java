@@ -3,11 +3,12 @@ package src.summer.beans;
 import java.lang.reflect.Method;
 
 public class Mapping {
-    String controllerName;
+    String controllerName, urlVerb;
     Method method;
 
-    public Mapping( String controllerName, Method method ) {
+    public Mapping( String controllerName, String urlVerb, Method method ) {
         this.setControllerName( controllerName );
+        this.setUrlVerb( urlVerb );
         this.setMethod( method );
     }
 
@@ -17,6 +18,14 @@ public class Mapping {
 
     public void setControllerName( String controllerName ) {
         this.controllerName = controllerName;
+    }
+
+    public String getUrlVerb() {
+        return urlVerb;
+    }
+
+    public void setUrlVerb( String urlVerb ) {
+        this.urlVerb = urlVerb;
     }
 
     public Method getMethod() {
