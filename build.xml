@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="SummerFrameworkBuild" default="clean-temp" basedir=".">
+<project name="SummerFrameworkBuild" default="deploy" basedir=".">
 
     <property name="work.dir" value="${basedir}"/>
     <property name="lib.dir" value="${work.dir}/lib"/>
@@ -14,14 +14,16 @@
         </fileset>
     </path>
 
-    <target name="clean-temp">
+    <target name="init">
         <delete dir="${temp.dir}"/>
         <delete dir="${target.dir}"/>
+        <echo message="Init Done"/>
     </target>
 
-    <target name="create-temp-dir" depends="clean-temp">
+    <target name="create-temp-dir" depends="init">
         <mkdir dir="${temp.dir}"/>
         <mkdir dir="${target.dir}"/>
+        <echo message="Create-temp Done" />
     </target>
 
     <target name="copy-java-files" depends="create-temp-dir">
@@ -47,7 +49,7 @@
     </target>
 
 
-    <target name="clean" depends="create-temp-dir, copy-java-files, compile-java, create-manifest, create-jar">
+    <target name="clean" depends="create-jar">
         <delete dir="${temp.dir}"/>
         <delete dir="${target.dir}"/>
         <delete file="${manifest.file}"/>
@@ -55,9 +57,9 @@
     </target>
 
     <target name="deploy" depends="clean">
-<!--        <copy todir="${temp.dir}">-->
-<!--            <fileset dir="${src.dir}" excludes="Main.java"/>-->
-<!--        </copy>-->
+        <copy todir="${work.dir}/../summer-test/build-file/lib">
+            <fileset file="${work.dir}/summer-framework.jar"/>
+        </copy>
         <echo message="Build done."/>
     </target>
 </project>
