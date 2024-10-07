@@ -25,9 +25,6 @@ public abstract class ScannerUtil {
      * Scan all controllers in the `packageName` folder.
      *
      * @param packageName Path to the folder containing the controllers.
-     * @return
-     * @throws ServletException
-     * @throws ClassNotFoundException
      */
     public static HashMap<String, Mapping> scanControllers( String packageName )
             throws ServletException, ClassNotFoundException, UnsupportedEncodingException {
@@ -69,11 +66,11 @@ public abstract class ScannerUtil {
     }
 
     /**
-     * Scan a file. If annotated with @Controller, we loop its methods. We add methods annotated
+     * Scan a file. If annotated with {@code @Controller}, we loop its methods. We add methods annotated
+     * {@code @UrlMapping} to URLMapping hashMap.
      *
      * @throws SummerMappingException When there are two or more methods listing on the same URL.
      * @throws SummerInitException    When the return type of @GetMapping method is neither String nor ModelView.
-     * @UrlMapping to URLMapping hashMap.
      */
     private static void scanFile( File file, String packageName, HashMap<String, Mapping> URLMappings )
             throws ClassNotFoundException, SummerInitException {
@@ -118,9 +115,7 @@ public abstract class ScannerUtil {
      * returnType must be of type String or ModelView
      */
     private static boolean isCorrectReturnType( String returnTypeName ) {
-        if ( returnTypeName.equals( String.class.getName() ) || returnTypeName.equals( ModelView.class.getName() ) )
-            return true;
-        return false;
+        return returnTypeName.equals( String.class.getName() ) || returnTypeName.equals( ModelView.class.getName() );
     }
 
     /**

@@ -53,8 +53,10 @@ public class FrontController extends HttpServlet {
 
         try {
 //            TODO: Tsy mamerina exception tsony fa message fotsiny. De asina status code 404
-            if ( !this.URLMappings.containsKey( route ) ) { // Verify existing route
-                throw new SummerProcessException( "No route for URL \"" + route + "\"." );
+            if ( !this.URLMappings.containsKey( route ) ) {
+                response.setStatus( HttpServletResponse.SC_NOT_FOUND );
+                response.getWriter().print( "There is no route for \"" + route + "\"" );
+                return;
             }
 
             Mapping mapping = this.URLMappings.get( route );

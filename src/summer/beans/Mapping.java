@@ -8,9 +8,6 @@ public class Mapping {
     String controllerName;
     List<VerbAction> verbActionList;
 
-//    TODO: Ajouter une liste verbe-aciton -- sprint10
-//    TODO: Add class VerbAction. Ajouter la class comme atrb de Mapping
-
     public Mapping( String controllerName, VerbAction firstVa ) {
         this.setControllerName( controllerName );
 
