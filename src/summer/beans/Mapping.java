@@ -1,15 +1,21 @@
 package src.summer.beans;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Mapping {
-    String controllerName, urlVerb;
-    Method method;
+    String controllerName;
+    List<VerbAction> verbActionList;
 
-    public Mapping( String controllerName, String urlVerb, Method method ) {
+//    TODO: Ajouter une liste verbe-aciton -- sprint10
+//    TODO: Add class VerbAction. Ajouter la class comme atrb de Mapping
+
+    public Mapping( String controllerName, VerbAction firstVa ) {
         this.setControllerName( controllerName );
-        this.setUrlVerb( urlVerb );
-        this.setMethod( method );
+
+        this.setVerbActionList( new ArrayList<>() );
+        this.getVerbActionList().add( firstVa );
     }
 
     public String getControllerName() {
@@ -20,19 +26,26 @@ public class Mapping {
         this.controllerName = controllerName;
     }
 
-    public String getUrlVerb() {
-        return urlVerb;
+    public List<VerbAction> getVerbActionList() {
+        return verbActionList;
     }
 
-    public void setUrlVerb( String urlVerb ) {
-        this.urlVerb = urlVerb;
+    public void setVerbActionList( List<VerbAction> verbActionList ) {
+        this.verbActionList = verbActionList;
     }
 
-    public Method getMethod() {
-        return method;
+    public VerbAction getVerbAction( String verb ) {
+        for ( VerbAction verbAction : verbActionList ) {
+            if ( verbAction.getVerb().equals( verb ) ) return verbAction;
+        }
+        return null;
     }
 
-    public void setMethod( Method method ) {
-        this.method = method;
+    public void addVerbAction( VerbAction verbAction ) {
+        this.getVerbActionList().add( verbAction );
+    }
+
+    public Method getMethod( String verb ) {
+        return this.getVerbAction( verb ).getAction();
     }
 }

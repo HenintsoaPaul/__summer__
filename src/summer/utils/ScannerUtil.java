@@ -16,8 +16,9 @@ import src.summer.beans.Mapping;
 import src.summer.beans.ModelView;
 import src.summer.annotations.Controller;
 import src.summer.annotations.UrlMapping;
+import src.summer.beans.VerbAction;
 import src.summer.exception.SummerInitException;
-import src.summer.exception.URLMappingException;
+import src.summer.exception.SummerMappingException;
 
 public abstract class ScannerUtil {
     /**
@@ -69,10 +70,10 @@ public abstract class ScannerUtil {
 
     /**
      * Scan a file. If annotated with @Controller, we loop its methods. We add methods annotated
-     * @UrlMapping to URLMapping hashMap.
      *
-     * @throws URLMappingException When there are two or more methods listing on the same URL.
-     * @throws SummerInitException When the return type of @GetMapping method is neither String nor ModelView.
+     * @throws SummerMappingException When there are two or more methods listing on the same URL.
+     * @throws SummerInitException    When the return type of @GetMapping method is neither String nor ModelView.
+     * @UrlMapping to URLMapping hashMap.
      */
     private static void scanFile( File file, String packageName, HashMap<String, Mapping> URLMappings )
             throws ClassNotFoundException, SummerInitException {
@@ -84,29 +85,29 @@ public abstract class ScannerUtil {
                 for ( Method method : clazz.getDeclaredMethods() ) {
                     if ( method.isAnnotationPresent( UrlMapping.class ) ) { // Verify if the method is annotated with @GetMapping
                         String url = method.getAnnotation( UrlMapping.class ).url(),
-                                methodName = method.getName();
+                                methodName = method.getName(),
+                                urlVerb = getUrlVerb( method ),
+                                returnTypeName = method.getReturnType().getName();
 
-                        // Verify if the URL is already in the HashMap
+                        handleReturnType( returnTypeName, className, methodName );
+
+                        // If the URL is already in the HashMap -> if new verb, add new VerbAction; else, throw Exception
                         if ( URLMappings.containsKey( url ) ) {
                             Mapping mapping = URLMappings.get( url );
-                            throw new URLMappingException( "\nURL \"" + url + "\" already exists in the URLMappings.\n"
-                                    + "Existing Mapping -> {\n \tclass: " + mapping.getControllerName() + " \n \tmethod: " + mapping.getMethod().getName() + " \n}\n"
-                                    + "New Mapping -> {\n \tclass: " + className + " \n \tmethod: " + methodName + " \n}\n" );
-                        }
+                            VerbAction verbAction = mapping.getVerbAction( urlVerb );
 
-                        // Verify the return type of the method
-                        String returnTypeName = method.getReturnType().getName();
-                        if ( returnTypeName.equals( String.class.getName() ) || returnTypeName.equals( ModelView.class.getName() ) ) {
-
-//                            Get whether it is POST or GET
-                            String urlVerb = "GET";
-                            if ( method.isAnnotationPresent( Post.class ) ) {
-                                urlVerb = "POST";
+                            if ( verbAction == null ) {
+                                mapping.addVerbAction( new VerbAction( urlVerb, method ) );
+                            } else {
+                                throw new SummerMappingException( "\nURL \"" + url + "\" already registered for the verb \"" + urlVerb + "\".\n"
+                                        + "Existing Mapping -> {\n \tclass: " + mapping.getControllerName() + " \n \tmethod: " + verbAction.getAction().getName() + " \n \tverb:" + verbAction.getVerb() + " }\n"
+                                        + "New Mapping -> {\n \tclass: " + className + " \n \tmethod: " + methodName + " \n \tverb: " + urlVerb + " }\n" );
                             }
-
-                            URLMappings.put( url, new Mapping( className, urlVerb, method ) );
-                        } else
-                            throw new SummerInitException( "Unsupported return type \"" + returnTypeName + "\" for method \"" + className + "." + methodName + "()\"" );
+                        } else {
+                            // Create Mapping and add first VerbAction
+                            VerbAction va = new VerbAction( urlVerb, method );
+                            URLMappings.put( url, new Mapping( className, va ) );
+                        }
                     }
                 }
             }
@@ -114,11 +115,35 @@ public abstract class ScannerUtil {
     }
 
     /**
-     * Look for a @Controller class named controllerName.
-     *
-     * @param controllerName
-     * @return
-     * @throws ClassNotFoundException
+     * returnType must be of type String or ModelView
+     */
+    private static boolean isCorrectReturnType( String returnTypeName ) {
+        if ( returnTypeName.equals( String.class.getName() ) || returnTypeName.equals( ModelView.class.getName() ) )
+            return true;
+        return false;
+    }
+
+    /**
+     * Verifier le type de retour. Si la verification echoue, on lance une exception.
+     */
+    private static void handleReturnType( String returnTypeName, String className, String methodName )
+            throws SummerInitException {
+        if ( !isCorrectReturnType( returnTypeName ) ) {
+            throw new SummerInitException( "Unsupported return type \"" + returnTypeName + "\" for method \"" + className + "." + methodName + "()\"" );
+        }
+    }
+
+    /**
+     * Get whether it is POST or GET
+     */
+    private static String getUrlVerb( Method method ) {
+        String urlVerb = "GET";
+        if ( method.isAnnotationPresent( Post.class ) ) urlVerb = "POST";
+        return urlVerb;
+    }
+
+    /**
+     * Look for a @Controller class named controllerName
      */
     public static Class<?> getClass( String controllerName )
             throws ClassNotFoundException {

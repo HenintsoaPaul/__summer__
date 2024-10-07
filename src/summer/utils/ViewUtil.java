@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import src.summer.beans.Mapping;
 import src.summer.beans.ModelView;
+import src.summer.beans.VerbAction;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -22,14 +23,17 @@ public abstract class ViewUtil {
         if ( ModelViewUtil.isInstance( value ) ) {
             display( value, request, response );
         } else {
-            print( mapping, value, response.getWriter() );
+            String verb = request.getMethod();
+            print( mapping, value, response.getWriter(), verb );
         }
     }
 
-    private static void print( Mapping mapping, Object value, PrintWriter out ) {
+    private static void print( Mapping mapping, Object value, PrintWriter out, String verb ) {
+        VerbAction va = mapping.getVerbAction( verb );
+
         out.println( "Controller: " + mapping.getControllerName() );
-        out.println( "Verb: " + mapping.getUrlVerb() );
-        out.println( "Method: " + mapping.getMethod().getName() );
+        out.println( "Verb: " + verb );
+        out.println( "Method: " + va.getAction().getName() );
         out.println( "Return Value: " + value );
     }
 
