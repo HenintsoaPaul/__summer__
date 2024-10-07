@@ -52,6 +52,7 @@ public class FrontController extends HttpServlet {
                 route = RouterUtil.getRoute( url ); // something like "<blab>/<...>"
 
         try {
+//            TODO: Tsy mamerina exception tsony fa message fotsiny. De asina status code 404
             if ( !this.URLMappings.containsKey( route ) ) { // Verify existing route
                 throw new SummerProcessException( "No route for URL \"" + route + "\"." );
             }
@@ -60,11 +61,10 @@ public class FrontController extends HttpServlet {
 
             // Verify the route matchs the verb (isPOST, isGET)
             String verb = request.getMethod();
-            if ( !verb.equals( mapping.getUrlVerb() ) ) {
+            if ( mapping.getVerbAction( verb ) == null ) {
                 throw new SummerProcessException( "Invalid verb \"" + verb + "\" for this URL." );
             }
 
-            Method method = mapping.getMethod();
 
             // Instance creation
             Class<?> clazz = ScannerUtil.getClass( mapping.getControllerName() );
@@ -76,6 +76,7 @@ public class FrontController extends HttpServlet {
             }
 
             // Get the method params
+            Method method = mapping.getVerbAction( verb ).getAction();
             List<Object> methodParams = ParamUtil.getMethodParameterValues( method, request );
             Object value = method.invoke( newInstance, methodParams.toArray() );
 
