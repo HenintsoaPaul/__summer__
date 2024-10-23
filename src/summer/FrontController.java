@@ -1,6 +1,7 @@
 package src.summer;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -16,6 +17,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
+@MultipartConfig
 public class FrontController extends HttpServlet {
     /**
      * Map containing the Mapping objects matching to their URLs.
@@ -52,7 +54,6 @@ public class FrontController extends HttpServlet {
                 route = RouterUtil.getRoute( url ); // something like "<blab>/<...>"
 
         try {
-//            TODO: Tsy mamerina exception tsony fa message fotsiny. De asina status code 404
             if ( !this.URLMappings.containsKey( route ) ) {
                 response.setStatus( HttpServletResponse.SC_NOT_FOUND );
                 response.getWriter().print( "There is no route for \"" + route + "\"" );
@@ -66,7 +67,6 @@ public class FrontController extends HttpServlet {
             if ( mapping.getVerbAction( verb ) == null ) {
                 throw new SummerProcessException( "Invalid verb \"" + verb + "\" for this URL." );
             }
-
 
             // Instance creation
             Class<?> clazz = ScannerUtil.getClass( mapping.getControllerName() );

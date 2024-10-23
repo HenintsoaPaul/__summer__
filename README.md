@@ -71,7 +71,7 @@ when running `javac ...` command.
 ### Binding form values in Controllers
 
 - Add input names as parameters of controller methods. All parameters of the method must be
-annotated with `@Param( name="<inputName>"" )`. If it ain't the case, there will be an exception.
+annotated with `@Param( name="<inputName>"" )`. Otherwise, there will be an exception.
 
 - Dispatch the values to the `ModelView` using `ModelView.addObject()`. 
 
@@ -96,10 +96,15 @@ it will throw an Exception.
 ```
 
 ```java
+import src.summer.annotations.Param;
+
 @Controller
 public class FormController extends HttpServlet {
     @UrlMapping( urlMapping = "myFormController" )
-    public ModelView okForm( @Param( name = "maily" ) String emailaka, String passy ) {
+    public ModelView okForm(
+            @Param( name = "maily" ) String emailaka,
+            @Param( name="passy" ) String passy 
+    ) {
         ModelView mv = new ModelView( "/my-view.jsp", null );
         mv.addObject( "email", emailaka );
         mv.addObject( "passwork", passy );
@@ -108,12 +113,47 @@ public class FormController extends HttpServlet {
 }
 ```
 
-### Supported types
+###### Supported types
 `int`, `String`, `LocalDate`.
 
-### Passing Objects
+### Sending File through form
 
-- Input Names must match object attributes names.
+- Add attribute `enctype="multipart/form-data"` to `<form action="[actionMethod]"><form/>` tag.
+
+- The names of input tag for files must begin with `file`.
+
+- In the controller method, annotate the args with `@Param( name="file<abcd...>", isFile = true )`.
+
+```html
+<form action="fufu" method="POST" enctype="multipart/form-data">
+    <input type="file" name="fileA" />
+    <input type="file" name="fileB" />
+
+    <input type="submit" value="Envoyer" />
+</form>
+```
+
+```java
+@Controller
+public class FileController {
+    @Post
+    @UrlMapping( url = "fufu" )
+    public String gererFichier(
+            @Param( name = "fileA", isFile = true ) SummerFile fileA,
+            @Param( name = "fileB", isFile = true ) SummerFile fi
+    ) {
+
+        System.out.println( "FileName > " + fileA.getFileName() );
+        System.out.println( "byte > " + fileA.getFileBytes().length );
+
+        System.out.println( "FileName > " + fi.getFileName() );
+        System.out.println( "byte > " + fi.getFileBytes().length );
+
+        return "fichier";
+    }
+}
+```
+
 
 ## Session
 
