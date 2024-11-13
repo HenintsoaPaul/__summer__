@@ -6,7 +6,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import src.summer.annotations.RestApi;
+import src.summer.annotations.controller.RestApi;
 import src.summer.beans.Mapping;
 import src.summer.beans.ModelView;
 import src.summer.exception.SummerProcessException;

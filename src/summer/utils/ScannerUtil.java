@@ -11,11 +11,11 @@ import java.util.Objects;
 
 import javax.servlet.ServletException;
 
-import src.summer.annotations.Post;
+import src.summer.annotations.controller.verb.Post;
 import src.summer.beans.Mapping;
 import src.summer.beans.ModelView;
-import src.summer.annotations.Controller;
-import src.summer.annotations.UrlMapping;
+import src.summer.annotations.controller.Controller;
+import src.summer.annotations.controller.UrlMapping;
 import src.summer.beans.VerbAction;
 import src.summer.exception.SummerInitException;
 import src.summer.exception.SummerMappingException;
