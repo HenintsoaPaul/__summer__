@@ -66,8 +66,8 @@ public abstract class ScannerUtil {
     }
 
     /**
-     * Scan a file. If annotated with {@code @Controller}, we loop its methods. We add methods annotated
-     * {@code @UrlMapping} to URLMapping hashMap.
+     * Scan a file. If it is a java class file annotated with {@code @Controller}, we loop its methods.
+     * We add methods annotated {@code @UrlMapping} to URLMapping hashMap.
      *
      * @throws SummerMappingException When there are two or more methods listing on the same URL.
      * @throws SummerInitException    When the return type of @GetMapping method is neither String nor ModelView.
@@ -80,33 +80,44 @@ public abstract class ScannerUtil {
 
             if ( clazz.isAnnotationPresent( Controller.class ) ) { // Verify if the class is annotated with @Controller
                 for ( Method method : clazz.getDeclaredMethods() ) {
-                    if ( method.isAnnotationPresent( UrlMapping.class ) ) { // Verify if the method is annotated with @GetMapping
-                        String url = method.getAnnotation( UrlMapping.class ).url(),
-                                methodName = method.getName(),
-                                urlVerb = getUrlVerb( method ),
-                                returnTypeName = method.getReturnType().getName();
-
-                        handleReturnType( returnTypeName, className, methodName );
-
-                        // If the URL is already in the HashMap -> if new verb, add new VerbAction; else, throw Exception
-                        if ( URLMappings.containsKey( url ) ) {
-                            Mapping mapping = URLMappings.get( url );
-                            VerbAction verbAction = mapping.getVerbAction( urlVerb );
-
-                            if ( verbAction == null ) {
-                                mapping.addVerbAction( new VerbAction( urlVerb, method ) );
-                            } else {
-                                throw new SummerMappingException( "\nURL \"" + url + "\" already registered for the verb \"" + urlVerb + "\".\n"
-                                        + "Existing Mapping -> {\n \tclass: " + mapping.getControllerName() + " \n \tmethod: " + verbAction.getAction().getName() + " \n \tverb:" + verbAction.getVerb() + " }\n"
-                                        + "New Mapping -> {\n \tclass: " + className + " \n \tmethod: " + methodName + " \n \tverb: " + urlVerb + " }\n" );
-                            }
-                        } else {
-                            // Create Mapping and add first VerbAction
-                            VerbAction va = new VerbAction( urlVerb, method );
-                            URLMappings.put( url, new Mapping( className, va ) );
-                        }
-                    }
+                    scanMethod( method, className, URLMappings );
                 }
+            }
+        }
+    }
+
+    /**
+     * Scan a method.
+     *
+     * @throws SummerMappingException When there are two or more methods listing on the same URL.
+     * @throws SummerInitException    When the return type of @GetMapping method is neither String nor ModelView.
+     */
+    private static void scanMethod( Method method, String className, HashMap<String, Mapping> URLMappings )
+            throws SummerInitException {
+        if ( method.isAnnotationPresent( UrlMapping.class ) ) { // Verify if the method is annotated with @GetMapping
+            String url = method.getAnnotation( UrlMapping.class ).url(),
+                    methodName = method.getName(),
+                    urlVerb = getUrlVerb( method ),
+                    returnTypeName = method.getReturnType().getName();
+
+            handleReturnType( returnTypeName, className, methodName );
+
+            // If the URL is already in the HashMap -> if new verb, add new VerbAction; else, throw Exception
+            if ( URLMappings.containsKey( url ) ) {
+                Mapping mapping = URLMappings.get( url );
+                VerbAction verbAction = mapping.getVerbAction( urlVerb );
+
+                if ( verbAction == null ) {
+                    mapping.addVerbAction( new VerbAction( urlVerb, method ) );
+                } else {
+                    throw new SummerMappingException( "\nURL \"" + url + "\" already registered for the verb \"" + urlVerb + "\".\n"
+                            + "Existing Mapping -> {\n \tclass: " + mapping.getControllerName() + " \n \tmethod: " + verbAction.getAction().getName() + " \n \tverb:" + verbAction.getVerb() + " }\n"
+                            + "New Mapping -> {\n \tclass: " + className + " \n \tmethod: " + methodName + " \n \tverb: " + urlVerb + " }\n" );
+                }
+            } else {
+                // Create Mapping and add first VerbAction
+                VerbAction va = new VerbAction( urlVerb, method );
+                URLMappings.put( url, new Mapping( className, va ) );
             }
         }
     }
@@ -129,7 +140,9 @@ public abstract class ScannerUtil {
     }
 
     /**
-     * Get whether it is POST or GET
+     * Get the urlVerb that is listened to by the method by looking for {@code controller.verb} annotations.
+     *
+     * @return the annotation's verb, or "GET" as default value for no annotation.
      */
     private static String getUrlVerb( Method method ) {
         String urlVerb = "GET";
