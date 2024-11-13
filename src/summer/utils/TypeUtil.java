@@ -13,7 +13,7 @@ public abstract class TypeUtil {
     }
 
     public static boolean isPrimitive( Object o ) {
-        return Arrays.stream( getAllPrimitiveWrapperClasses() ).anyMatch( o::equals );
+        return Arrays.asList( getAllPrimitiveWrapperClasses() ).contains( o );
     }
 
     public static Object cast( Object value, Class<?> clazz ) {

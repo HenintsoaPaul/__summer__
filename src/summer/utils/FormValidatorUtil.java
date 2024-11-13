@@ -1,6 +1,8 @@
 package src.summer.utils;
 
+import src.summer.annotations.form.validation.Min;
 import src.summer.annotations.form.validation.Required;
+import src.summer.exception.form.MinParamException;
 import src.summer.exception.form.RequiredParamException;
 import src.summer.exception.form.SummerFormException;
 
@@ -30,11 +32,11 @@ public abstract class FormValidatorUtil {
      * @param formObject Un Objet lie au formulaire
      */
     public static List<SummerFormException> validateFormObject( Object formObject ) {
+        List<SummerFormException> errors = new ArrayList<>();
         boolean isPrimitive = TypeUtil.isPrimitive( formObject );
         System.out.println( "IsPrimitive: " + isPrimitive );
-        if ( isPrimitive ) return null;
+        if ( isPrimitive ) return errors;
 
-        List<SummerFormException> errors = new ArrayList<>();
         for ( Field field : formObject.getClass().getDeclaredFields() ) {
             List<SummerFormException> ers = validateField( formObject, field );
             if ( !ers.isEmpty() ) {
@@ -47,11 +49,17 @@ public abstract class FormValidatorUtil {
     public static List<SummerFormException> validateField( Object formObject, Field field ) {
         List<SummerFormException> errors = new ArrayList<>();
         try {
+            field.setAccessible( true );
+            Object fieldValue = field.get( formObject );
             if ( field.isAnnotationPresent( Required.class ) ) {
-                field.setAccessible( true );
-                Object fieldValue = field.get( formObject );
                 if ( fieldValue == null || ( fieldValue instanceof String && ( ( String ) fieldValue ).trim().isEmpty() ) ) {
                     errors.add( new RequiredParamException( field ) );
+                }
+            }
+            if ( field.isAnnotationPresent( Min.class ) ) {
+                int minValue = field.getAnnotation( Min.class ).value();
+                if ( fieldValue instanceof Integer && ( ( Integer ) fieldValue ) < minValue ) {
+                    errors.add( new MinParamException( field, ( Integer ) fieldValue, minValue ) );
                 }
             }
         } catch ( IllegalAccessException e ) {

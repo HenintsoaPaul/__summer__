@@ -4,13 +4,13 @@ import javax.servlet.ServletException;
 import java.util.List;
 
 public class SummerFormValidationException extends ServletException {
-    private String message;
+    private final String message;
 
     public SummerFormValidationException( List<SummerFormException> validationErrors ) {
         super();
-        String msg = "";
-        for ( SummerFormException e : validationErrors ) msg += "\n" + e.getMessage();
-        this.message = msg;
+        StringBuilder msg = new StringBuilder();
+        for ( SummerFormException e : validationErrors ) msg.append( "\n" ).append( e.getMessage() );
+        this.message = msg.toString();
     }
 
     @Override
