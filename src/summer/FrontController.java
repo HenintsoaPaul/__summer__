@@ -10,6 +10,8 @@ import src.summer.annotations.RestApi;
 import src.summer.beans.Mapping;
 import src.summer.beans.ModelView;
 import src.summer.exception.SummerProcessException;
+import src.summer.exception.form.SummerFormException;
+import src.summer.exception.form.SummerFormValidationException;
 import src.summer.utils.*;
 
 import java.io.IOException;
@@ -80,6 +82,13 @@ public class FrontController extends HttpServlet {
             // Get the method params
             Method method = mapping.getVerbAction( verb ).getAction();
             List<Object> methodParams = ParamUtil.getMethodParameterValues( method, request );
+
+            // Validate Params (If annotated)
+            List<SummerFormException> errors = FormValidatorUtil.validateForm( methodParams );
+            if ( !errors.isEmpty() ) {
+                throw new SummerFormValidationException( errors );
+            }
+
             Object value = method.invoke( newInstance, methodParams.toArray() );
 
             // Verify the method is annotated with '@Rest'
