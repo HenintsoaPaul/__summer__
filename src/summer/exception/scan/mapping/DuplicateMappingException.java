@@ -2,9 +2,8 @@ package src.summer.exception.scan.mapping;
 
 import src.summer.beans.Mapping;
 import src.summer.beans.VerbAction;
-import src.summer.exception.scan.SummerInitException;
 
-public class DuplicateMappingException extends SummerInitException {
+public class DuplicateMappingException extends SummerMappingException {
     private final String url, urlVerb;
     private final String newController, newAction;
     private final Mapping mapping;
