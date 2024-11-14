@@ -89,18 +89,18 @@ public abstract class ScannerUtil {
     /**
      * Scan a method.
      *
-     * @throws SummerMappingException When there are two or more methods listing on the same URL.
-     * @throws SummerInitException    When the return type of @GetMapping method is neither String nor ModelView.
+     * @throws DuplicateMappingException When there are two or more methods listing on the same URL.
+     * @throws ReturnTypeException    When the return type of @GetMapping method is neither String nor ModelView.
      */
     private static void scanMethod( Method method, String className, HashMap<String, Mapping> URLMappings )
-            throws SummerInitException {
+            throws NullVerbActionException, ReturnTypeException {
         if ( method.isAnnotationPresent( UrlMapping.class ) ) { // Verify if the method is annotated with @GetMapping
             String url = method.getAnnotation( UrlMapping.class ).url(),
                     methodName = method.getName(),
                     urlVerb = getUrlVerb( method ),
                     returnTypeName = method.getReturnType().getName();
 
-            handleReturnType( returnTypeName, className, methodName );
+            ReturnTypeUtil.verify( returnTypeName, className, methodName );
 
             // If the URL is already in the HashMap -> if new verb, add new VerbAction; else, throw Exception
             if ( URLMappings.containsKey( url ) ) {
@@ -119,23 +119,6 @@ public abstract class ScannerUtil {
                 VerbAction va = new VerbAction( urlVerb, method );
                 URLMappings.put( url, new Mapping( className, va ) );
             }
-        }
-    }
-
-    /**
-     * returnType must be of type String or ModelView
-     */
-    private static boolean isCorrectReturnType( String returnTypeName ) {
-        return returnTypeName.equals( String.class.getName() ) || returnTypeName.equals( ModelView.class.getName() );
-    }
-
-    /**
-     * Verifier le type de retour. Si la verification echoue, on lance une exception.
-     */
-    private static void handleReturnType( String returnTypeName, String className, String methodName )
-            throws SummerInitException {
-        if ( !isCorrectReturnType( returnTypeName ) ) {
-            throw new SummerInitException( "Unsupported return type \"" + returnTypeName + "\" for method \"" + className + "." + methodName + "()\"" );
         }
     }
 
