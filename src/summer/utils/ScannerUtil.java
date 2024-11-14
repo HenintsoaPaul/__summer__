@@ -69,11 +69,11 @@ public abstract class ScannerUtil {
      * Scan a file. If it is a java class file annotated with {@code @Controller}, we loop its methods.
      * We add methods annotated {@code @UrlMapping} to URLMapping hashMap.
      *
-     * @throws SummerMappingException When there are two or more methods listing on the same URL.
-     * @throws SummerInitException    When the return type of @GetMapping method is neither String nor ModelView.
+     * @throws DuplicateMappingException When there are two or more methods listing on the same URL.
+     * @throws ReturnTypeException    When the return type of @GetMapping method is neither String nor ModelView.
      */
     private static void scanFile( File file, String packageName, HashMap<String, Mapping> URLMappings )
-            throws ClassNotFoundException, SummerInitException {
+            throws ClassNotFoundException, ReturnTypeException, NullVerbActionException, DuplicateMappingException {
         if ( file.getName().endsWith( ".class" ) ) {
             String className = packageName + "." + file.getName().replace( ".class", "" );
             Class<?> clazz = Class.forName( className );
@@ -89,11 +89,11 @@ public abstract class ScannerUtil {
     /**
      * Scan a method.
      *
-     * @throws DuplicateMappingException When there are two or more methods listing on the same URL.
+     * @throws DuplicateMappingException When there are two or more methods listing on the same URL for the same verb.
      * @throws ReturnTypeException    When the return type of @GetMapping method is neither String nor ModelView.
      */
     private static void scanMethod( Method method, String className, HashMap<String, Mapping> URLMappings )
-            throws NullVerbActionException, ReturnTypeException {
+            throws NullVerbActionException, ReturnTypeException, DuplicateMappingException {
         if ( method.isAnnotationPresent( UrlMapping.class ) ) { // Verify if the method is annotated with @GetMapping
             String url = method.getAnnotation( UrlMapping.class ).url(),
                     methodName = method.getName(),
@@ -102,7 +102,7 @@ public abstract class ScannerUtil {
 
             ReturnTypeUtil.verify( returnTypeName, className, methodName );
 
-            // If the URL is already in the HashMap -> if new verb, add new VerbAction; else, throw Exception
+            // If the URL is already in the HashMap -> if new verb, add new VerbAction; else, DuplicateException
             if ( URLMappings.containsKey( url ) ) {
                 Mapping mapping = URLMappings.get( url );
                 VerbAction verbAction = mapping.getVerbAction( urlVerb );
@@ -110,9 +110,7 @@ public abstract class ScannerUtil {
                 if ( verbAction == null ) {
                     mapping.addVerbAction( new VerbAction( urlVerb, method ) );
                 } else {
-                    throw new SummerMappingException( "\nURL \"" + url + "\" already registered for the verb \"" + urlVerb + "\".\n"
-                            + "Existing Mapping -> {\n \tclass: " + mapping.getControllerName() + " \n \tmethod: " + verbAction.getAction().getName() + " \n \tverb:" + verbAction.getVerb() + " }\n"
-                            + "New Mapping -> {\n \tclass: " + className + " \n \tmethod: " + methodName + " \n \tverb: " + urlVerb + " }\n" );
+                    throw new DuplicateMappingException( url, urlVerb, mapping, className, methodName );
                 }
             } else {
                 // Create Mapping and add first VerbAction

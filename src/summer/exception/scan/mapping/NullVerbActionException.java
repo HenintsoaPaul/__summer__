@@ -5,6 +5,7 @@ public class NullVerbActionException extends SummerMappingException {
 
     public NullVerbActionException( String message ) {
         super();
+        this.message = message;
     }
 
     @Override
