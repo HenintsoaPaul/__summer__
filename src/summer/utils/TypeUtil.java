@@ -1,9 +1,21 @@
 package src.summer.utils;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Optional;
 
 public abstract class TypeUtil {
+    public static Class<?>[] getAllPrimitiveWrapperClasses() {
+        return new Class[]{
+                Integer.class, Long.class, Float.class, Double.class,
+                Boolean.class, Byte.class, Short.class, Character.class
+        };
+    }
+
+    public static boolean isPrimitive( Object o ) {
+        return Arrays.asList( getAllPrimitiveWrapperClasses() ).contains( o );
+    }
+
     public static Object cast( Object value, Class<?> clazz ) {
         if ( clazz.isInstance( value ) ) {
             return clazz.cast( value );

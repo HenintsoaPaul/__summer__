@@ -1,5 +1,5 @@
 # __summer__
-Creation of a java framework based on spring-framework.
+Java framework based on spring-framework.
 
 
 ## How to use the `summer` framework?
@@ -12,13 +12,15 @@ Creation of a java framework based on spring-framework.
  
 - Set `summer-framework.jar` as one of the libraries used in you working directory.
 
+- Setup controllers' folder name in `web.xml` (Explained bellow).
+
 And... That is it. Normally, after completing those steps, you can use `summer`
-framework in any java project. Happy coding...😊😉
+framework in any java project. Happy coding...😊😉.
 
 
 ## Controllers
 
-### How to create Controllers?
+### Setup Controllers' folder
 
 - Create a folder for your controllers like `controllers_dir`.
 
@@ -32,8 +34,12 @@ of your project like the following:
   </context-param>
 ```
 
-- When you create a new controller, add the annotation `@Controller` of 
-the package `src.summer.annotations` in the `summer-framework.jar`.
+### How to create Controllers?
+
+- Create the java class in the controllers' folder set above.
+
+- Add the annotation `@Controller` of the package `src.summer.annotations` 
+in the `summer-framework.jar` to your java class.
 
 
 ### Controller Methods
@@ -116,6 +122,21 @@ public class FormController extends HttpServlet {
 ###### Supported types
 `int`, `String`, `LocalDate`.
 
+### Form Validation
+
+- Create an entity that contains the fields of the form.
+
+- Bind the form to the entity.
+
+- Annotate fields that should validate with annotations
+in `annotations.form.validation`.
+
+- That is it.
+
+##### Validators:
+
+- @Required
+
 ### Sending File through form
 
 - Add attribute `enctype="multipart/form-data"` to `<form action="[actionMethod]"><form/>` tag.
@@ -162,7 +183,7 @@ to your class.
 
 ```java
 import jakarta.servlet.http.HttpServlet;
-import src.summer.annotations.Controller;
+import src.summer.annotations.controller.Controller;
 import src.summer.beans.SummerSession;
 
 @Controller
@@ -178,7 +199,7 @@ controller to your `ModelView`.
 
 ```java
 import jakarta.servlet.http.HttpServlet;
-import src.summer.annotations.Controller;
+import src.summer.annotations.controller.Controller;
 import src.summer.beans.ModelView;
 import src.summer.beans.SummerSession;
 import src.summer.exception.SummerSessionException;

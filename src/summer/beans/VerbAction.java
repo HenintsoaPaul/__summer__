@@ -1,6 +1,6 @@
 package src.summer.beans;
 
-import src.summer.exception.SummerMappingException;
+import src.summer.exception.scan.mapping.NullVerbActionException;
 
 import java.lang.reflect.Method;
 
@@ -9,7 +9,7 @@ public class VerbAction {
     Method action;
 
     public VerbAction( String verb, Method action )
-            throws SummerMappingException {
+            throws NullVerbActionException {
         this.setVerb( verb );
         this.setAction( action );
     }
@@ -19,9 +19,9 @@ public class VerbAction {
     }
 
     public void setVerb( String verb )
-            throws SummerMappingException {
+            throws NullVerbActionException {
         if ( verb == null || verb.isEmpty() ) {
-            throw new SummerMappingException( "Verb cannot be null or empty." );
+            throw new NullVerbActionException( "Verb cannot be null or empty." );
         }
         this.verb = verb;
     }
@@ -31,9 +31,9 @@ public class VerbAction {
     }
 
     public void setAction( Method action )
-            throws SummerMappingException {
+            throws NullVerbActionException {
         if ( action == null ) {
-            throw new SummerMappingException( "Method cannot be null." );
+            throw new NullVerbActionException( "Method cannot be null." );
         }
         this.action = action;
     }

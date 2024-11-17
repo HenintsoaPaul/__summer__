@@ -6,10 +6,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import src.summer.annotations.RestApi;
+import src.summer.annotations.controller.RestApi;
 import src.summer.beans.Mapping;
 import src.summer.beans.ModelView;
-import src.summer.exception.SummerProcessException;
+import src.summer.exception.form.SummerFormException;
+import src.summer.exception.form.SummerFormValidationException;
+import src.summer.exception.process.NoRouteForUrlException;
+import src.summer.exception.process.NoRouteForVerbException;
 import src.summer.utils.*;
 
 import java.io.IOException;
@@ -55,17 +58,16 @@ public class FrontController extends HttpServlet {
 
         try {
             if ( !this.URLMappings.containsKey( route ) ) {
-                response.setStatus( HttpServletResponse.SC_NOT_FOUND );
-                response.getWriter().print( "There is no route for \"" + route + "\"" );
+                new NoRouteForUrlException( route ).writeException( response );
                 return;
             }
 
             Mapping mapping = this.URLMappings.get( route );
 
-            // Verify the route matchs the verb (isPOST, isGET)
             String verb = request.getMethod();
             if ( mapping.getVerbAction( verb ) == null ) {
-                throw new SummerProcessException( "Invalid verb \"" + verb + "\" for this URL." );
+                new NoRouteForVerbException( verb, url ).writeException( response );
+                return;
             }
 
             // Instance creation
@@ -80,6 +82,13 @@ public class FrontController extends HttpServlet {
             // Get the method params
             Method method = mapping.getVerbAction( verb ).getAction();
             List<Object> methodParams = ParamUtil.getMethodParameterValues( method, request );
+
+            // Validate Params (If annotated)
+            List<SummerFormException> errors = FormValidatorUtil.validateForm( methodParams );
+            if ( !errors.isEmpty() ) {
+                throw new SummerFormValidationException( errors );
+            }
+
             Object value = method.invoke( newInstance, methodParams.toArray() );
 
             // Verify the method is annotated with '@Rest'

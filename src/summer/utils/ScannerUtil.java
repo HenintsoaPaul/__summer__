@@ -11,14 +11,17 @@ import java.util.Objects;
 
 import javax.servlet.ServletException;
 
-import src.summer.annotations.Post;
+import src.summer.annotations.controller.verb.Post;
 import src.summer.beans.Mapping;
-import src.summer.beans.ModelView;
-import src.summer.annotations.Controller;
-import src.summer.annotations.UrlMapping;
+import src.summer.annotations.controller.Controller;
+import src.summer.annotations.controller.UrlMapping;
 import src.summer.beans.VerbAction;
-import src.summer.exception.SummerInitException;
-import src.summer.exception.SummerMappingException;
+import src.summer.exception.scan.file.EmptyDirectoryException;
+import src.summer.exception.scan.ReturnTypeException;
+import src.summer.exception.scan.file.EmptyPackageException;
+import src.summer.exception.scan.file.PackageNotFoundException;
+import src.summer.exception.scan.mapping.DuplicateMappingException;
+import src.summer.exception.scan.mapping.NullVerbActionException;
 
 public abstract class ScannerUtil {
     /**
@@ -27,14 +30,14 @@ public abstract class ScannerUtil {
      * @param packageName Path to the folder containing the controllers.
      */
     public static HashMap<String, Mapping> scanControllers( String packageName )
-            throws ServletException, ClassNotFoundException, UnsupportedEncodingException {
+            throws ClassNotFoundException, UnsupportedEncodingException, ServletException {
         HashMap<String, Mapping> URLMappings = new HashMap<>();
         String f = getURLPackage( packageName ).getFile();
         File file = new File( URLDecoder.decode( f, String.valueOf( StandardCharsets.UTF_8 ) ) );
 
         if ( file.isDirectory() ) {
-            if ( Objects.requireNonNull( file.listFiles() ).length == 0 ) { // The package is empty.
-                throw new SummerInitException( "Directory \"" + file.getName() + "\" is empty." );
+            if ( Objects.requireNonNull( file.listFiles() ).length == 0 ) {
+                throw new EmptyDirectoryException( file );
             }
             scanDirectory( file, packageName, URLMappings );
         } else scanFile( file, packageName, URLMappings );
@@ -43,15 +46,15 @@ public abstract class ScannerUtil {
     }
 
     private static URL getURLPackage( String packageName )
-            throws SummerInitException {
-        if ( packageName == null || packageName.isEmpty() ) // The user did not specify the controller package.
-            throw new SummerInitException( "packageName is null or empty. Please check your \"web.xml\" file." );
+            throws EmptyPackageException, PackageNotFoundException {
+        // The user did not specify the controller package.
+        if ( packageName == null || packageName.isEmpty() )
+            throw new EmptyPackageException( packageName );
 
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         URL resource = classLoader.getResource( packageName.replace( ".", "/" ) );
 
-        if ( resource == null ) // The package does not exist.
-            throw new SummerInitException( "Package \"" + packageName + "\" does not exist." );
+        if ( resource == null ) throw new PackageNotFoundException( packageName );
         return resource;
     }
 
@@ -66,70 +69,64 @@ public abstract class ScannerUtil {
     }
 
     /**
-     * Scan a file. If annotated with {@code @Controller}, we loop its methods. We add methods annotated
-     * {@code @UrlMapping} to URLMapping hashMap.
+     * Scan a file. If it is a java class file annotated with {@code @Controller}, we loop its methods.
+     * We add methods annotated {@code @UrlMapping} to URLMapping hashMap.
      *
-     * @throws SummerMappingException When there are two or more methods listing on the same URL.
-     * @throws SummerInitException    When the return type of @GetMapping method is neither String nor ModelView.
+     * @throws DuplicateMappingException When there are two or more methods listing on the same URL.
+     * @throws ReturnTypeException    When the return type of @GetMapping method is neither String nor ModelView.
      */
     private static void scanFile( File file, String packageName, HashMap<String, Mapping> URLMappings )
-            throws ClassNotFoundException, SummerInitException {
+            throws ClassNotFoundException, ReturnTypeException, NullVerbActionException, DuplicateMappingException {
         if ( file.getName().endsWith( ".class" ) ) {
             String className = packageName + "." + file.getName().replace( ".class", "" );
             Class<?> clazz = Class.forName( className );
 
             if ( clazz.isAnnotationPresent( Controller.class ) ) { // Verify if the class is annotated with @Controller
                 for ( Method method : clazz.getDeclaredMethods() ) {
-                    if ( method.isAnnotationPresent( UrlMapping.class ) ) { // Verify if the method is annotated with @GetMapping
-                        String url = method.getAnnotation( UrlMapping.class ).url(),
-                                methodName = method.getName(),
-                                urlVerb = getUrlVerb( method ),
-                                returnTypeName = method.getReturnType().getName();
-
-                        handleReturnType( returnTypeName, className, methodName );
-
-                        // If the URL is already in the HashMap -> if new verb, add new VerbAction; else, throw Exception
-                        if ( URLMappings.containsKey( url ) ) {
-                            Mapping mapping = URLMappings.get( url );
-                            VerbAction verbAction = mapping.getVerbAction( urlVerb );
-
-                            if ( verbAction == null ) {
-                                mapping.addVerbAction( new VerbAction( urlVerb, method ) );
-                            } else {
-                                throw new SummerMappingException( "\nURL \"" + url + "\" already registered for the verb \"" + urlVerb + "\".\n"
-                                        + "Existing Mapping -> {\n \tclass: " + mapping.getControllerName() + " \n \tmethod: " + verbAction.getAction().getName() + " \n \tverb:" + verbAction.getVerb() + " }\n"
-                                        + "New Mapping -> {\n \tclass: " + className + " \n \tmethod: " + methodName + " \n \tverb: " + urlVerb + " }\n" );
-                            }
-                        } else {
-                            // Create Mapping and add first VerbAction
-                            VerbAction va = new VerbAction( urlVerb, method );
-                            URLMappings.put( url, new Mapping( className, va ) );
-                        }
-                    }
+                    scanMethod( method, className, URLMappings );
                 }
             }
         }
     }
 
     /**
-     * returnType must be of type String or ModelView
+     * Scan a method.
+     *
+     * @throws DuplicateMappingException When there are two or more methods listing on the same URL for the same verb.
+     * @throws ReturnTypeException    When the return type of @GetMapping method is neither String nor ModelView.
      */
-    private static boolean isCorrectReturnType( String returnTypeName ) {
-        return returnTypeName.equals( String.class.getName() ) || returnTypeName.equals( ModelView.class.getName() );
-    }
+    private static void scanMethod( Method method, String className, HashMap<String, Mapping> URLMappings )
+            throws NullVerbActionException, ReturnTypeException, DuplicateMappingException {
+        if ( method.isAnnotationPresent( UrlMapping.class ) ) { // Verify if the method is annotated with @GetMapping
+            String url = method.getAnnotation( UrlMapping.class ).url(),
+                    methodName = method.getName(),
+                    urlVerb = getUrlVerb( method ),
+                    returnTypeName = method.getReturnType().getName();
 
-    /**
-     * Verifier le type de retour. Si la verification echoue, on lance une exception.
-     */
-    private static void handleReturnType( String returnTypeName, String className, String methodName )
-            throws SummerInitException {
-        if ( !isCorrectReturnType( returnTypeName ) ) {
-            throw new SummerInitException( "Unsupported return type \"" + returnTypeName + "\" for method \"" + className + "." + methodName + "()\"" );
+            ReturnTypeUtil.verify( returnTypeName, className, methodName );
+
+            // If the URL is already in the HashMap -> if new verb, add new VerbAction; else, DuplicateException
+            if ( URLMappings.containsKey( url ) ) {
+                Mapping mapping = URLMappings.get( url );
+                VerbAction verbAction = mapping.getVerbAction( urlVerb );
+
+                if ( verbAction == null ) {
+                    mapping.addVerbAction( new VerbAction( urlVerb, method ) );
+                } else {
+                    throw new DuplicateMappingException( url, urlVerb, mapping, className, methodName );
+                }
+            } else {
+                // Create Mapping and add first VerbAction
+                VerbAction va = new VerbAction( urlVerb, method );
+                URLMappings.put( url, new Mapping( className, va ) );
+            }
         }
     }
 
     /**
-     * Get whether it is POST or GET
+     * Get the urlVerb that is listened to by the method by looking for {@code controller.verb} annotations.
+     *
+     * @return the annotation's verb, or "GET" as default value for no annotation.
      */
     private static String getUrlVerb( Method method ) {
         String urlVerb = "GET";
