@@ -9,8 +9,6 @@ import javax.servlet.http.HttpServletResponse;
 import src.summer.annotations.controller.RestApi;
 import src.summer.beans.Mapping;
 import src.summer.beans.ModelView;
-import src.summer.exception.form.SummerFormException;
-import src.summer.exception.form.SummerFormValidationException;
 import src.summer.exception.process.NoRouteForUrlException;
 import src.summer.exception.process.NoRouteForVerbException;
 import src.summer.utils.*;
@@ -84,10 +82,10 @@ public class FrontController extends HttpServlet {
             List<Object> methodParams = ParamUtil.getMethodParameterValues( method, request );
 
             // Validate Params (If annotated)
-            List<SummerFormException> errors = FormValidatorUtil.validateForm( methodParams );
-            if ( !errors.isEmpty() ) {
-                throw new SummerFormValidationException( errors );
-            }
+//            List<SummerFormException> errors = FormValidatorUtil.validateForm( methodParams );
+//            if ( !errors.isEmpty() ) {
+//                throw new SummerFormValidationException( errors );
+//            }
 
             Object value = method.invoke( newInstance, methodParams.toArray() );
 

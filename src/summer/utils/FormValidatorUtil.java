@@ -53,13 +53,13 @@ public abstract class FormValidatorUtil {
             Object fieldValue = field.get( formObject );
             if ( field.isAnnotationPresent( Required.class ) ) {
                 if ( fieldValue == null || ( fieldValue instanceof String && ( ( String ) fieldValue ).trim().isEmpty() ) ) {
-                    errors.add( new RequiredParamException( field ) );
+                    errors.add( new RequiredParamException( field.getName() ) );
                 }
             }
             if ( field.isAnnotationPresent( Min.class ) ) {
                 int minValue = field.getAnnotation( Min.class ).value();
                 if ( fieldValue instanceof Integer && ( ( Integer ) fieldValue ) < minValue ) {
-                    errors.add( new MinParamException( field, ( Integer ) fieldValue, minValue ) );
+                    errors.add( new MinParamException( field.getName(), ( Integer ) fieldValue, minValue ) );
                 }
             }
         } catch ( IllegalAccessException e ) {

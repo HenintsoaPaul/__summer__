@@ -1,13 +1,18 @@
 package src.summer.exception.form;
 
 import javax.servlet.ServletException;
-import java.lang.reflect.Field;
 
 public abstract class SummerFormException extends ServletException {
-    protected Field field;
+    protected String fieldName;
 
-    public SummerFormException( Field field ) {
+    public SummerFormException( String fieldName ) {
         super();
-        this.field = field;
+        this.fieldName = fieldName;
     }
+
+    public String getFieldName() {
+        return fieldName;
+    }
+
+    public abstract String getCustomMessage();
 }
