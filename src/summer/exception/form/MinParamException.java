@@ -1,18 +1,21 @@
 package src.summer.exception.form;
 
-import java.lang.reflect.Field;
-
 public class MinParamException extends SummerFormException {
     int fieldValue, minValue;
 
-    public MinParamException( Field field, int fieldValue, int minValue ) {
-        super(field);
+    public MinParamException( String fieldName, int fieldValue, int minValue ) {
+        super( fieldName );
         this.fieldValue = fieldValue;
         this.minValue = minValue;
     }
 
     @Override
+    public String getCustomMessage() {
+        return "Field \"" + fieldName + "\" (" + fieldValue + ") is under min value (" + minValue + ").";
+    }
+
+    @Override
     public String getMessage() {
-        return "Field \"" + field.getName() + "\" (" + fieldValue + ") is under min value (" + minValue + ").";
+        return this.getCustomMessage();
     }
 }

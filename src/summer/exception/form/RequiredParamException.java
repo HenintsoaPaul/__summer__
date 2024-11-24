@@ -1,14 +1,17 @@
 package src.summer.exception.form;
 
-import java.lang.reflect.Field;
-
 public class RequiredParamException extends SummerFormException {
-    public RequiredParamException( Field field ) {
-        super( field );
+    public RequiredParamException( String fieldName ) {
+        super( fieldName );
+    }
+
+    @Override
+    public String getCustomMessage() {
+        return "Field \"" + this.fieldName + "\" is required.";
     }
 
     @Override
     public String getMessage() {
-        return "Field \"" + field.getName() + "\" is required.";
+        return this.getCustomMessage();
     }
 }
