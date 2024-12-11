@@ -10,10 +10,7 @@ public class ValidationLog {
     List<ValidationError> validationErrors = new ArrayList<>();
 
     // Constr
-    public ValidationLog() {}
-
-    public ValidationLog( Object lastInput ) {
-        this.setLastInput( lastInput );
+    public ValidationLog() {
     }
 
     // Getters n Setters
