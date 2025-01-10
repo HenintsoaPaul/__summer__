@@ -218,3 +218,43 @@ public class YourController extends HttpServlet {
     }
 }
 ```
+
+## Authorization
+
+### Setup authorization variables names
+
+- User's authorization data are stored in the 2 variables in the Session.
+
+- Add variables' names in the `web.xml` file of your project like the following:
+
+```xml
+<context-param>
+    <param-name>var_user_authenticated</param-name>
+    <param-value>yourVariableName1</param-value>
+</context-param>
+<context-param>
+    <param-name>var_user_role_level</param-name>
+    <param-value>yourVariableName2</param-value>
+</context-param>
+```
+
+### Authorize routes
+
+- Annotate the methods to be authorized with `@Authorize( int level )` annotation.
+
+```java
+import jakarta.servlet.http.HttpServlet;
+import src.summer.annotations.Authorized;
+import src.summer.annotations.controller.Controller;
+import src.summer.beans.ModelView;
+
+@Controller
+public class YourController extends HttpServlet {
+
+    @Authorized( roleLevel = 2 ) // The user need to have a roleLevel >= 2
+    @UrlMapping( urlMapping = "protected" )
+    public ModelView someMethod() {
+        return new ModelView( "my-view.jsp", null );
+    }
+}
+```
