@@ -12,6 +12,7 @@ import src.summer.beans.ModelView;
 import src.summer.beans.validation.ValidationLog;
 import src.summer.exception.process.NoRouteForUrlException;
 import src.summer.exception.process.NoRouteForVerbException;
+import src.summer.handler.AuthorizationHandler;
 import src.summer.utils.*;
 
 import java.io.IOException;
@@ -25,6 +26,7 @@ public class FrontController extends HttpServlet {
      * Map containing the Mapping objects matching to their URLs.
      */
     private HashMap<String, Mapping> URLMappings = new HashMap<>();
+    private final AuthorizationHandler authorizationHandler = new AuthorizationHandler();
 
     @Override
     public void init()
@@ -84,6 +86,9 @@ public class FrontController extends HttpServlet {
 
             ValidationLog validationLog = new ValidationLog();
             ctlMethodParams = ParamUtil.getMethodParameterValues( ctlMethod, request, validationLog );
+
+            // Verify User Authorization
+            this.authorizationHandler.handle( ctlMethod, getServletContext(), request.getSession() );
 
             Object methodResult = ctlMethod.invoke( ctlInstance, ctlMethodParams.toArray() );
 
