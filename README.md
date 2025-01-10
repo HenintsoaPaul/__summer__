@@ -197,6 +197,8 @@ public class YourController extends HttpServlet {
 - To use Session in a view, you need to dispatch the `SummerSession` of your
 controller to your `ModelView`.
 
+- Adding duplicate keys will throw an a `SummerSessionException` in your method.
+
 ```java
 import jakarta.servlet.http.HttpServlet;
 import src.summer.annotations.controller.Controller;
@@ -214,6 +216,18 @@ public class YourController extends HttpServlet {
             throws SummerSessionException {
         HashMap<String, Object> map = new HashMap<>();
         map.put( "login", login );
+        map.put( "password", password );
+        
+        // Store values
+        summerSession.addAttribute( "login", login );
+        summerSession.addAttribute( "password", password );
+        
+        // Retrieve values
+        String d = summerSession.getAttribute( "myAttribute" );
+        
+        // Clear session
+        summerSession.destroy();
+        
         return new ModelView( "my-view.jsp", map );
     }
 }
