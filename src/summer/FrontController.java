@@ -9,8 +9,10 @@ import javax.servlet.http.HttpServletResponse;
 import src.summer.annotations.controller.RestApi;
 import src.summer.beans.Mapping;
 import src.summer.beans.ModelView;
+import src.summer.beans.validation.ValidationLog;
 import src.summer.exception.process.NoRouteForUrlException;
 import src.summer.exception.process.NoRouteForVerbException;
+import src.summer.handler.AuthorizationHandler;
 import src.summer.utils.*;
 
 import java.io.IOException;
@@ -24,6 +26,7 @@ public class FrontController extends HttpServlet {
      * Map containing the Mapping objects matching to their URLs.
      */
     private HashMap<String, Mapping> URLMappings = new HashMap<>();
+    private final AuthorizationHandler authorizationHandler = new AuthorizationHandler();
 
     @Override
     public void init()
@@ -70,32 +73,33 @@ public class FrontController extends HttpServlet {
 
             // Instance creation
             Class<?> clazz = ScannerUtil.getClass( mapping.getControllerName() );
-            Object newInstance = clazz.newInstance();
+            Object ctlInstance = clazz.newInstance();
 
             // Session Injection
             if ( SessionUtil.containsSummerSession( clazz ) ) {
-                SessionUtil.injectSession( newInstance, request.getSession() );
+                SessionUtil.injectSession( ctlInstance, request.getSession() );
             }
 
-            // Get the method params
-            Method method = mapping.getVerbAction( verb ).getAction();
-            List<Object> methodParams = ParamUtil.getMethodParameterValues( method, request );
+            // Get the method params (+ validate params' values)
+            Method ctlMethod = mapping.getVerbAction( verb ).getAction();
+            List<Object> ctlMethodParams;
 
-            // Validate Params (If annotated)
-//            List<SummerFormException> errors = FormValidatorUtil.validateForm( methodParams );
-//            if ( !errors.isEmpty() ) {
-//                throw new SummerFormValidationException( errors );
-//            }
+            ValidationLog validationLog = new ValidationLog();
+            ctlMethodParams = ParamUtil.getMethodParameterValues( ctlMethod, request, validationLog );
 
-            Object value = method.invoke( newInstance, methodParams.toArray() );
+            // Verify User Authorization
+            this.authorizationHandler.handle( ctlMethod, getServletContext(), request.getSession() );
 
-            // Verify the method is annotated with '@Rest'
-            if ( method.isAnnotationPresent( RestApi.class ) ) { // If true, show JSON
-                Object jsonValue = ModelViewUtil.isInstance( value ) ?
-                        ( ( ModelView ) value ).getData() : value;
+            Object methodResult = ctlMethod.invoke( ctlInstance, ctlMethodParams.toArray() );
+
+            if ( validationLog.hasErrors() ) {
+                ViewUtil.showFormValidationException( methodResult, validationLog, request, response );
+            } else if ( ctlMethod.isAnnotationPresent( RestApi.class ) ) {
+                Object jsonValue = ModelViewUtil.isInstance( methodResult ) ?
+                        ( ( ModelView ) methodResult ).getData() : methodResult;
                 ViewUtil.printJson( jsonValue, response );
-            } else { // Else, show value(String or ModelView)
-                ViewUtil.show( value, mapping, request, response );
+            } else {
+                ViewUtil.show( methodResult, mapping, request, response );
             }
         } catch ( ClassNotFoundException | InstantiationException | IllegalAccessException |
                   InvocationTargetException | NoSuchFieldException | NoSuchMethodException e ) {

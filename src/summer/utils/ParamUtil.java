@@ -19,36 +19,33 @@ import java.util.*;
 
 public abstract class ParamUtil {
     /**
-     * Return a list of the values of the args required by the {@code method}
-     * that are contained in the {@code request} object.
+     * Return a list of the values of the args required by the {@code method}.
+     * The values are contained in the {@code request} object.
      */
-    public static List<Object> getMethodParameterValues( Method method, HttpServletRequest request )
-            throws NoSuchFieldException, InvocationTargetException, InstantiationException, IllegalAccessException,
-            NoSuchMethodException, ServletException, IOException {
-        ValidationLog validationLog = new ValidationLog();
-        List<Object> values = new ArrayList<>();
-        boolean validate = false;
+    public static List<Object> getMethodParameterValues(
+            Method method,
+            HttpServletRequest request,
+            ValidationLog validationLog
+    )
+            throws NoSuchFieldException, InvocationTargetException,
+            InstantiationException, IllegalAccessException,
+            NoSuchMethodException, ServletException,
+            IOException {
+        List<Object> methodParameterValues = new ArrayList<>();
         for ( Parameter parameter : method.getParameters() ) {
-            if ( !parameter.getType().equals( validationLog.getClass() ) ) {
-                if ( !parameter.isAnnotationPresent( Param.class ) ) {
-                    throw new SummerProcessException( "ETU2443 - Parameters must be annotated with \"@Param\"." );
-                }
-                validate = parameter.isAnnotationPresent( Validate.class );
-                values.add( getParameterValue( parameter, request, validationLog, validate ) );
-            } else {
-                if ( validate ) {
-                    values.add( validationLog );
-                }
-            }
+            Object value = getParameterValue( parameter, request, validationLog );
+            methodParameterValues.add( value );
         }
-        return values;
+        return methodParameterValues;
     }
 
-    public static Object getParameterValue( Parameter parameter, HttpServletRequest request,
-                                            ValidationLog validationLog, Boolean validate )
+    public static Object getParameterValue( Parameter parameter, HttpServletRequest request, ValidationLog validationLog )
             throws NoSuchFieldException, InstantiationException, IllegalAccessException, NoSuchMethodException,
             InvocationTargetException, ServletException, IOException {
         Param annotation = parameter.getAnnotation( Param.class );
+        if ( annotation == null ) {
+            throw new SummerProcessException( "ETU2443 - Parameters must be annotated with \"@Param\"." );
+        }
         String paramName = annotation.name();
 
         if ( annotation.isFile() ) {
@@ -57,27 +54,31 @@ public abstract class ParamUtil {
 
         Object paramValue = request.getParameter( paramName );
         Class<?> paramClass = parameter.getType();
-        // Dans le cas ou {@code parameter} a ete directement depuis le HttpRequest
+        // Dans le cas ou {@code parameter} a ete envoye directement depuis le HttpRequest
         if ( paramValue != null ) {
             return TypeUtil.cast( paramValue, paramClass );
         }
 
         // Dans le cas ou {@code parameter} est un objet, dont les fields ont ete envoyes dans un formulaire
         paramValue = paramClass.newInstance();
+        boolean needToValidate = parameter.isAnnotationPresent( Validate.class );
         for ( String fieldName : getFieldsNames( paramName, request ) ) {
             Field field = paramClass.getDeclaredField( fieldName );
             Class<?> fieldType = field.getType();
-            Object fieldValue = TypeUtil.cast( request.getParameter( paramName + "." + fieldName ), fieldType );
 
-            // TODO: validate field...
-            if ( validate ) ConstraintValidatorUtil.validateField( validationLog, field, fieldValue );
-            // ...
+            String inputName = paramName + "." + fieldName;
+            Object fieldValue = TypeUtil.cast( request.getParameter( inputName ), fieldType );
 
-            String setterName = "set" + fieldName.substring( 0, 1 ).toUpperCase() + fieldName.substring( 1 );
-            Method setterMethod = paramClass.getDeclaredMethod( setterName, fieldType );
+            // Validate the field value...
+            if ( needToValidate ) {
+                ConstraintValidatorUtil.validateField( validationLog, field, fieldValue, inputName );
+            }
+
+            // Set field value using the corresponding setter...
+            Method setterMethod = getSetterMethod( paramClass, fieldName, fieldType );
             setterMethod.invoke( paramValue, fieldValue );
         }
-        if ( validate ) {
+        if ( needToValidate ) {
             validationLog.setLastInput( paramValue );
         }
         return paramValue;
@@ -94,5 +95,14 @@ public abstract class ParamUtil {
             }
         }
         return fields;
+    }
+
+    private static String getSetterName( String fieldName ) {
+        return "set" + fieldName.substring( 0, 1 ).toUpperCase() + fieldName.substring( 1 );
+    }
+
+    private static Method getSetterMethod( Class<?> clazz, String fieldName, Class<?> fieldType )
+            throws NoSuchMethodException {
+        return clazz.getDeclaredMethod( getSetterName( fieldName ), fieldType );
     }
 }
