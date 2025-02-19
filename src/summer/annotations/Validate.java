@@ -8,4 +8,6 @@ import java.lang.annotation.Target;
 @Retention( RetentionPolicy.RUNTIME )
 @Target( ElementType.PARAMETER )
 public @interface Validate {
+    String controllerVerb() default "get";
+    String errorPage();
 }

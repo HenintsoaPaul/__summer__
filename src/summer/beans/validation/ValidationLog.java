@@ -6,7 +6,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ValidationLog {
+
+    /**
+     * Path to the fallback view for errors.
+     */
+    String errorPage;
+    /**
+     * Object containing the values of the previous form.
+     */
     Object lastInput;
+    /**
+     * Errors from previous form validation.
+     */
     List<ValidationError> validationErrors = new ArrayList<>();
 
     // Constr
@@ -14,6 +25,14 @@ public class ValidationLog {
     }
 
     // Getters n Setters
+    public String getErrorPage() {
+        return errorPage;
+    }
+
+    public void setErrorPage(String errorPage) {
+        this.errorPage = errorPage;
+    }
+
     public Object getLastInput() {
         return lastInput;
     }

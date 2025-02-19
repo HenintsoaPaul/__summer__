@@ -9,10 +9,6 @@ public class ModelView {
      */
     String url;
     /**
-     * Path to the fallback view for errors.
-     */
-    String errorUrl;
-    /**
      * Data to dispatch the view.
      */
     HashMap<String, Object> data;
@@ -51,13 +47,5 @@ public class ModelView {
 
     public void addObject( String key, Object value ) {
         this.data.put( key, value );
-    }
-
-    public String getErrorUrl() {
-        return errorUrl;
-    }
-
-    public void setErrorUrl( String errorUrl ) {
-        this.errorUrl = errorUrl;
     }
 }
