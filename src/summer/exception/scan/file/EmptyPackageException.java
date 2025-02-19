@@ -2,8 +2,6 @@ package src.summer.exception.scan.file;
 
 import src.summer.exception.scan.SummerInitException;
 
-import java.io.File;
-
 public class EmptyPackageException extends SummerInitException {
     String packageName;
 
