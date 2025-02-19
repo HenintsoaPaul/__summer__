@@ -1,6 +1,7 @@
 package src.summer.utils;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -12,29 +13,41 @@ public abstract class TypeUtil {
         };
     }
 
-    public static boolean isPrimitive( Object o ) {
-        return Arrays.asList( getAllPrimitiveWrapperClasses() ).contains( o );
+    public static boolean isPrimitive(Object o) {
+        return Arrays.asList(getAllPrimitiveWrapperClasses()).contains(o);
     }
 
-    public static Object cast( Object value, Class<?> clazz ) {
-        if ( clazz.isInstance( value ) ) {
-            return clazz.cast( value );
+    public static Object cast(Object value, Class<?> clazz) {
+        if (clazz.isInstance(value)) {
+            return clazz.cast(value);
         }
 
-        Optional<String> stringValue = Optional.ofNullable( ( String ) value ).map( String::valueOf );
-        switch ( clazz.getSimpleName().toLowerCase() ) {
+        Optional<String> stringValue = Optional.ofNullable((String) value).map(String::valueOf);
+        switch (clazz.getSimpleName().toLowerCase()) {
             case "string":
-                return stringValue.orElse( null );
+                return stringValue.orElse(null);
             case "localdate":
-                return LocalDate.parse( stringValue.orElse( "" ) );
+                if (stringValue.isPresent()) {
+                    String data = stringValue.get();
+                    return data.isEmpty() ? null : LocalDate.parse(data);
+                } else {
+                    return null;
+                }
+            case "localdatetime":
+                if (stringValue.isPresent()) {
+                    String data = stringValue.get();
+                    return data.isEmpty() ? null : LocalDateTime.parse(data);
+                } else {
+                    return null;
+                }
             case "integer":
             case "int":
-                return Integer.valueOf( stringValue.orElse( "0" ) );
+                return Integer.valueOf(stringValue.orElse("0"));
             case "double":
             case "float":
-                return Double.valueOf( stringValue.orElse( "0.0" ) );
+                return Double.valueOf(stringValue.orElse("0.0"));
             default:
-                throw new IllegalArgumentException( "Unsupported type: " + clazz );
+                throw new IllegalArgumentException("Unsupported type: " + clazz);
         }
     }
 }

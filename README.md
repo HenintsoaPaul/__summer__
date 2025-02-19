@@ -120,7 +120,8 @@ public class FormController extends HttpServlet {
 ```
 
 ###### Supported types
-`int`, `String`, `LocalDate`.
+
+`int`, `String`, `java.time.LocalDate`, `java.time.LocalDateTime`.
 
 ### Form Validation
 
