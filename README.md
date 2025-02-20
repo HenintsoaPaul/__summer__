@@ -123,28 +123,14 @@ public class FormController extends HttpServlet {
 
 `int`, `String`, `java.time.LocalDate`, `java.time.LocalDateTime`.
 
-### Form Validation
-
-- Create an entity that contains the fields of the form.
-
-- Bind the form to the entity.
-
-- Annotate fields that should validate with annotations
-in `annotations.form.validation`.
-
-- That is it.
-
-##### Validators:
-
-- @Required
 
 ### Sending File through form
 
 - Add attribute `enctype="multipart/form-data"` to `<form action="[actionMethod]"><form/>` tag.
 
-- The names of input tag for files must begin with `file`.
-
 - In the controller method, annotate the args with `@Param( name="file<abcd...>", isFile = true )`.
+
+- You can save the file to a desired path from your controller method.
 
 ```html
 <form action="fufu" method="POST" enctype="multipart/form-data">
@@ -161,19 +147,54 @@ public class FileController {
     @Post
     @UrlMapping( url = "fufu" )
     public String gererFichier(
-            @Param( name = "fileA", isFile = true ) SummerFile fileA,
-            @Param( name = "fileB", isFile = true ) SummerFile fi
+            @Param( name = "fileA", isFile = true ) SummerFile myFile
     ) {
-
+        // some processing...
         System.out.println( "FileName > " + fileA.getFileName() );
         System.out.println( "byte > " + fileA.getFileBytes().length );
+        
+        // save file
+        String fileDirectory = "C:\\Users\\Henintsoa\\Documents\\_data";
+        myFile.saveToFile(fileDirectory);
 
-        System.out.println( "FileName > " + fi.getFileName() );
-        System.out.println( "byte > " + fi.getFileBytes().length );
-
-        return "fichier";
+        return "File saved on the server. Path: " + fileDirectory + "\\" + myFile.getFileName();
     }
 }
+```
+
+
+### Form Validation
+
+- Create an entity that contains the fields of the form.
+
+- Bind the form to the entity.
+
+- Annotate fields that should validate with annotations
+  in `annotations.form.validation`.
+
+- In the controller method that is called on the form action, annotate
+  parameters that should be validated with `@Validate(errorPage)`. **Only annotated
+  parameters will be validated.**
+
+- **Till now, methods are redirect to the errorPage using *GET* method**
+
+###### Validators:
+
+- @Required()
+- @Min(value)
+- @Max(value)
+- @IntRange(minValue, maxValue)
+
+###### Example:
+
+```java
+    @Post
+    @UrlMapping(url = "reservation_save")
+    public ModelView save(
+            @Validate(errorPage = "reservation_form") @Param(name = "formData") ReservationFormData reservationFormData
+    ) {
+    // your controller method body...
+    }
 ```
 
 
@@ -181,19 +202,6 @@ public class FileController {
 
 - To use Session in a `@Controller` class, you need to add a field `SummerSession`
 to your class.
-
-```java
-import jakarta.servlet.http.HttpServlet;
-import src.summer.annotations.controller.Controller;
-import src.summer.beans.SummerSession;
-
-@Controller
-public class YourController extends HttpServlet {
-    SummerSession summerSession;
-
-    // your methods ...
-}
-```
 
 - To use Session in a view, you need to dispatch the `SummerSession` of your
 controller to your `ModelView`.
@@ -209,6 +217,7 @@ import src.summer.exception.SummerSessionException;
 
 @Controller
 public class YourController extends HttpServlet {
+    // Session injection
     SummerSession summerSession;
 
     @UrlMapping( urlMapping = "auth" )
