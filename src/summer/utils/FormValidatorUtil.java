@@ -10,6 +10,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public abstract class FormValidatorUtil {
     /**
      * Valider chaque objet lie au formulaire

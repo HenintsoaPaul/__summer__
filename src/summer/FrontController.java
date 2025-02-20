@@ -93,6 +93,7 @@ public class FrontController extends HttpServlet {
             if (validationLog.hasErrors()) {
                 ModelView mv = new ModelView(validationLog.getErrorPage(), null);
                 ModelViewUtil.showFormValidationException(mv, validationLog, request, response);
+                return;
             }
 
             // Verify User Authorization

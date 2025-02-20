@@ -42,10 +42,12 @@ public abstract class TypeUtil {
                 }
             case "integer":
             case "int":
-                return Integer.valueOf(stringValue.orElse("0"));
+                String val = stringValue.orElse("0");
+                val = val.isEmpty() ? "0" : val;
+                return Integer.parseInt(val); // if null or empty => 0
             case "double":
             case "float":
-                return Double.valueOf(stringValue.orElse("0.0"));
+                return Double.parseDouble(stringValue.orElse("0.0"));
             default:
                 throw new IllegalArgumentException("Unsupported type: " + clazz);
         }

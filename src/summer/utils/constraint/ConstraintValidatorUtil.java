@@ -29,10 +29,7 @@ public abstract class ConstraintValidatorUtil {
             String inputName
     ) {
         if (field.isAnnotationPresent(Required.class)) {
-
-            if (fieldValue == null || (
-                    fieldValue instanceof String && ((String) fieldValue).trim().isEmpty()
-            )) {
+            if (fieldValue == null || fieldValue.toString().isEmpty()) {
                 validationLog.addError(new RequiredParamException(inputName));
             }
         }
