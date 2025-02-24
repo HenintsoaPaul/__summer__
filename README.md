@@ -167,10 +167,10 @@ public class FileController {
 
 - Create an entity that contains the fields of the form.
 
-- Bind the form to the entity.
-
-- Annotate fields that should validate with annotations
+- Annotate fields that should be validated with annotations
   in `annotations.form.validation`.
+
+- In the html page, bind the form to the entity.
 
 - In the controller method that is called on the form action, annotate
   parameters that should be validated with `@Validate(errorPage)`. **Only annotated
@@ -178,12 +178,23 @@ public class FileController {
 
 - **Till now, methods are redirect to the errorPage using *GET* method**
 
-###### Validators:
+##### Validators:
 
 - @Required()
+
 - @Min(value)
+
 - @Max(value)
+
 - @IntRange(minValue, maxValue)
+
+##### Validation errors:
+
+- Validation errors are available in `request` object of the page specified in `@Validate(errorPage="...")`.
+
+- There is a default method to show validation errors using bootstrap classes. Anyway, you can customize the
+way you display the validation error in your page. Errors for a field are available as `List<String>` via 
+`ValidationError.getErrors("myFieldName")`.
 
 ###### Example:
 
@@ -191,10 +202,60 @@ public class FileController {
     @Post
     @UrlMapping(url = "reservation_save")
     public ModelView save(
-            @Validate(errorPage = "reservation_form") @Param(name = "formData") ReservationFormData reservationFormData
+            @Validate(errorPage = "reservation_form") 
+            @Param(name = "formData") ReservationFormData reservationFormData
     ) {
     // your controller method body...
     }
+```
+
+```html
+    <%-- Date reservation --%>
+    <div class="mb-3">
+        <label class="form-label">Date Reservation</label>
+        <input type="datetime-local"
+               name="formData.date_reservation"
+               class="form-control"
+               value="<%= lastInput != null ? lastInput.getDate_reservation() : "" %>"/>
+        <%
+            if (lastInput != null) {
+              Optional<ValidationError> vErr = vLog.getErrorByInput("formData.date_reservation");
+              if (vErr.isPresent()) {
+                out.print(vErr.get().toHtml());
+              }
+            }
+        %>
+    </div>
+
+    <%-- Type Siege --%>
+    <div class="mb-3">
+        <label class="form-label">Type Siege: </label>
+        <select name="formData.id_type_siege">
+            <option value="">Choisir le siege</option>
+            <%for (TypeSiege typeSiege : typeSieges) { %>
+            <option
+                    value="<%= typeSiege.getId()%>"
+                    <%
+                        if (lastInput != null) {
+                            if (lastInput.getId_type_siege() == typeSiege.getId()) {
+                                out.print("selected");
+                            }
+                        }
+                    %>
+            >
+                <%= typeSiege.getNom() %>
+            </option>
+            <% } %>
+            <%
+                if (lastInput != null) {
+                Optional<ValidationError> vErr = vLog.getErrorByInput("formData.date_reservation");
+                  if (vErr.isPresent()) {
+                    out.print(vErr.get().toHtml());
+                  }
+                }
+            %>
+        </select>
+    </div>
 ```
 
 
