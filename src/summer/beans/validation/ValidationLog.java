@@ -4,6 +4,7 @@ import src.summer.exception.form.SummerFormException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class ValidationLog {
 
@@ -37,7 +38,7 @@ public class ValidationLog {
         return lastInput;
     }
 
-    public void setLastInput( Object lastInput ) {
+    public void setLastInput(Object lastInput) {
         this.lastInput = lastInput;
     }
 
@@ -49,27 +50,30 @@ public class ValidationLog {
         return this.validationErrors;
     }
 
-    public ValidationError getErrorByInput( String inputName ) {
-        for ( ValidationError error : this.getValidationErrors() ) {
-            if ( error.getInputName().equals( inputName ) ) return error;
+    public Optional<ValidationError> getErrorByInput(String inputName) {
+        return this.getValidationErrors().stream()
+                .filter(error -> error.getInputName().equals(inputName))
+                .findFirst();
+    }
+
+    public void addValidationError(ValidationError error) {
+        this.getValidationErrors().add(error);
+    }
+
+    private void addErrorTo(String inputName, String error) {
+        ValidationError ve;
+        Optional<ValidationError> optional = getErrorByInput(inputName);
+
+        if (optional.isPresent()) {
+            ve = optional.get();
+        } else {
+            ve = new ValidationError(inputName);
+            this.addValidationError(ve);
         }
-        return null;
+        ve.addError(error);
     }
 
-    public void addValidationError( ValidationError error ) {
-        this.getValidationErrors().add( error );
-    }
-
-    private void addErrorTo( String inputName, String error ) {
-        ValidationError ve = getErrorByInput( inputName );
-        if ( ve == null ) {
-            ve = new ValidationError( inputName );
-            this.addValidationError( ve );
-        }
-        ve.addError( error );
-    }
-
-    public void addError( SummerFormException sfe ) {
-        this.addErrorTo( sfe.getFieldName(), sfe.getCustomMessage() );
+    public void addError(SummerFormException sfe) {
+        this.addErrorTo(sfe.getFieldName(), sfe.getCustomMessage());
     }
 }
