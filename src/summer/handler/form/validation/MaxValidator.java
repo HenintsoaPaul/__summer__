@@ -28,13 +28,11 @@ public class MaxValidator implements IFormValidator {
                 return;
             }
 
-            double maxValue = maxAnnotation.value();
+            double maxValue = maxAnnotation.value(),
+                    value = ((Number) fieldValue).doubleValue();
 
-            Number value = (Number) fieldValue;
-            double numericValue = value.doubleValue();
-
-            if (numericValue > maxValue) {
-                validationLog.addError(new MaxParamException(inputName, numericValue, maxValue));
+            if (value > maxValue) {
+                validationLog.addError(new MaxParamException(inputName, value, maxValue));
             }
         }
     }
