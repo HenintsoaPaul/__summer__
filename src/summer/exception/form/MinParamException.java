@@ -1,9 +1,10 @@
 package src.summer.exception.form;
 
 public class MinParamException extends SummerFormException {
-    int fieldValue, minValue;
 
-    public MinParamException( String fieldName, int fieldValue, int minValue ) {
+    double fieldValue, minValue;
+
+    public MinParamException( String fieldName, double fieldValue, double minValue ) {
         super( fieldName );
         this.fieldValue = fieldValue;
         this.minValue = minValue;
