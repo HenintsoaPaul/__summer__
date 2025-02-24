@@ -24,6 +24,9 @@ import java.util.*;
 
 @MultipartConfig
 public class FrontController extends HttpServlet {
+
+    private final ParamUtil paramUtil = new ParamUtil();
+
     /**
      * Map containing the Mapping objects matching to their URLs.
      */
@@ -87,7 +90,7 @@ public class FrontController extends HttpServlet {
             List<Object> ctlMethodParams;
 
             ValidationLog validationLog = new ValidationLog();
-            ctlMethodParams = ParamUtil.getMethodParameterValues(ctlMethod, request, validationLog);
+            ctlMethodParams = paramUtil.getMethodParameterValues(ctlMethod, request, validationLog);
 
             // Redirect on form validation exception
             if (validationLog.hasErrors()) {

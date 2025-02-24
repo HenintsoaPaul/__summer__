@@ -84,19 +84,4 @@ public class HtmlUtil {
         element.appendChild(document.createComment(comment));
     }
 
-    /**
-     * Crée un nouveau document HTML avec un élément racine fictif et ajoute un commentaire à un élément HTML.
-     *
-     * @param htmlElement L'élément HTML cible auquel le commentaire sera ajouté.
-     * @param comment     Le texte du commentaire à insérer.
-     * @throws ParserConfigurationException Si une erreur survient lors de la création du document HTML.
-     */
-    public static void addComment(
-            Element htmlElement,
-            String comment
-    ) throws ParserConfigurationException {
-        Document htmlDocument = HtmlUtil.createDocument("div");
-        addComment(htmlDocument, htmlElement, comment);
-    }
-
 }

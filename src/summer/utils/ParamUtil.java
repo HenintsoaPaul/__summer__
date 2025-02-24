@@ -8,7 +8,7 @@ import src.summer.annotations.Validate;
 import src.summer.beans.SummerFile;
 import src.summer.beans.validation.ValidationLog;
 import src.summer.exception.SummerProcessException;
-import src.summer.utils.constraint.ConstraintValidatorUtil;
+import src.summer.handler.form.validation.FormValidatorFacade;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -17,14 +17,17 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.*;
 
-public abstract class ParamUtil {
+public class ParamUtil {
+
+    private final FormValidatorFacade formValidatorFacade = new FormValidatorFacade();
+
     /**
      * Return a list of the values of the args required by the {@code method}.
      * The values are contained in the {@code request} object.
      * <p>
      * Prendre la liste des parametres(arguments) de la methode a appeler -> prendre la valeur de chq parametre dans le request
      */
-    public static List<Object> getMethodParameterValues(
+    public List<Object> getMethodParameterValues(
             Method method,
             HttpServletRequest request,
             ValidationLog validationLog
@@ -32,7 +35,8 @@ public abstract class ParamUtil {
             throws NoSuchFieldException, InvocationTargetException,
             InstantiationException, IllegalAccessException,
             NoSuchMethodException, ServletException,
-            IOException {
+            IOException
+    {
         List<Object> methodParameterValues = new ArrayList<>();
         for (Parameter parameter : method.getParameters()) {
             Object value = getParameterValue(parameter, request, validationLog);
@@ -46,9 +50,16 @@ public abstract class ParamUtil {
      * @param request       Request contant les data du formulaire
      * @param validationLog Objet pour contenir les erreurs de validation des champs de formulaire
      */
-    public static Object getParameterValue(Parameter parameter, HttpServletRequest request, ValidationLog validationLog)
-            throws NoSuchFieldException, InstantiationException, IllegalAccessException, NoSuchMethodException,
-            InvocationTargetException, ServletException, IOException {
+    public Object getParameterValue(
+            Parameter parameter,
+            HttpServletRequest request,
+            ValidationLog validationLog
+    )
+            throws NoSuchFieldException, InstantiationException,
+            IllegalAccessException, NoSuchMethodException,
+            InvocationTargetException, ServletException,
+            IOException
+    {
         Param annotation = parameter.getAnnotation(Param.class);
         if (annotation == null) {
             throw new SummerProcessException("ETU2443 - Parameters must be annotated with \"@Param\".");
@@ -77,29 +88,32 @@ public abstract class ParamUtil {
             String inputName = paramName + "." + fieldName;
             Object fieldValue = request.getParameter(inputName);
 
-            // Validate required field
+            // Validate required field before cast to preserve null values
             if (needToValidate) {
-                ConstraintValidatorUtil.validateAnnotationRequired(validationLog, field, fieldValue, inputName);
+                formValidatorFacade.validateRequired(validationLog, field, fieldValue, inputName);
             }
 
-            // Cast field value, then validate value it...
+            // Cast field value, then validate value it then prevent null values
             fieldValue = TypeUtil.cast(fieldValue, fieldType);
             if (needToValidate) {
-                ConstraintValidatorUtil.validateField(validationLog, field, fieldValue, inputName);
+                formValidatorFacade.validateField(validationLog, field, fieldValue, inputName);
             }
 
             // Set field value using the corresponding setter...
             Method setterMethod = getSetterMethod(paramClass, fieldName, fieldType);
             setterMethod.invoke(paramValue, fieldValue);
         }
+
+        // set last input and redirection page on error
         if (needToValidate) {
             validationLog.setLastInput(paramValue);
             validationLog.setErrorPage(parameter.getAnnotation(Validate.class).errorPage());
         }
+
         return paramValue;
     }
 
-    private static List<String> getFieldsNames(String entityName, HttpServletRequest request) {
+    private List<String> getFieldsNames(String entityName, HttpServletRequest request) {
         List<String> fields = new ArrayList<>();
         Enumeration<String> listParameterNames = request.getParameterNames();
         while (listParameterNames.hasMoreElements()) {
@@ -112,11 +126,11 @@ public abstract class ParamUtil {
         return fields;
     }
 
-    private static String getSetterName(String fieldName) {
+    private String getSetterName(String fieldName) {
         return "set" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
     }
 
-    private static Method getSetterMethod(Class<?> clazz, String fieldName, Class<?> fieldType)
+    private Method getSetterMethod(Class<?> clazz, String fieldName, Class<?> fieldType)
             throws NoSuchMethodException {
         return clazz.getDeclaredMethod(getSetterName(fieldName), fieldType);
     }
