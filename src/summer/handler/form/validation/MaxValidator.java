@@ -3,11 +3,10 @@ package src.summer.handler.form.validation;
 import src.summer.annotations.form.validation.Max;
 import src.summer.beans.validation.ValidationLog;
 import src.summer.exception.form.MaxParamException;
-import src.summer.exception.form.NumberParamException;
 
 import java.lang.reflect.Field;
 
-public class MaxValidator implements IFormValidator {
+public class MaxValidator extends NumberValidator {
 
     @Override
     public void validate(ValidationLog validationLog, Field field, Object fieldValue, String inputName) {
@@ -23,10 +22,8 @@ public class MaxValidator implements IFormValidator {
         Max maxAnnotation = field.getAnnotation(Max.class);
 
         if (maxAnnotation != null) {
-            if (!Number.class.isAssignableFrom(field.getType()) || !(fieldValue instanceof Number)) {
-                validationLog.addError(new NumberParamException(inputName));
-                return;
-            }
+            boolean isNumber = super.isNumber(validationLog, field, inputName);
+            if (!isNumber) return;
 
             double maxValue = maxAnnotation.value(),
                     value = ((Number) fieldValue).doubleValue();

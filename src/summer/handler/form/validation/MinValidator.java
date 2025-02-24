@@ -2,13 +2,11 @@ package src.summer.handler.form.validation;
 
 import src.summer.annotations.form.validation.Min;
 import src.summer.beans.validation.ValidationLog;
-import src.summer.exception.form.IntParamException;
 import src.summer.exception.form.MinParamException;
-import src.summer.exception.form.NumberParamException;
 
 import java.lang.reflect.Field;
 
-public class MinValidator implements IFormValidator {
+public class MinValidator extends NumberValidator {
 
     @Override
     public void validate(ValidationLog validationLog, Field field, Object fieldValue, String inputName) {
@@ -24,10 +22,8 @@ public class MinValidator implements IFormValidator {
         Min minAnnotation = field.getAnnotation(Min.class);
 
         if (minAnnotation != null) {
-            if (!Number.class.isAssignableFrom(field.getType()) || !(fieldValue instanceof Number)) {
-                validationLog.addError(new NumberParamException(inputName));
-                return;
-            }
+            boolean isNumber = super.isNumber(validationLog, field, inputName);
+            if (!isNumber) return;
 
             double minValue = minAnnotation.value(),
                     value = ((Number) fieldValue).doubleValue();
