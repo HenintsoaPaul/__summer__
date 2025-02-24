@@ -52,4 +52,8 @@ public abstract class TypeUtil {
                 throw new IllegalArgumentException("Unsupported type: " + clazz);
         }
     }
+
+    public static boolean isNumber(Class<?> clazz) {
+        return Number.class.isAssignableFrom(clazz);
+    }
 }

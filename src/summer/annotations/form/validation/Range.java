@@ -7,6 +7,7 @@ import java.lang.annotation.Target;
 
 @Retention( RetentionPolicy.RUNTIME )
 @Target( ElementType.FIELD )
-public @interface Min {
-    double value();
+public @interface Range {
+    double minValue();
+    double maxValue();
 }
