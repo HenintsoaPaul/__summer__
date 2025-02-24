@@ -39,7 +39,7 @@ public class ValidationErrorDisplay {
 
         rootDiv.appendChild(ul);
 
-        HtmlUtil.addComment(rootDiv, "Validation Error");
+        HtmlUtil.addComment(htmlDocument, rootDiv, "Validation Error");
 
         return HtmlUtil.documentToString(htmlDocument);
     }
