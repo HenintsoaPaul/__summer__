@@ -81,9 +81,7 @@ public class FrontController extends HttpServlet {
             Object ctlInstance = clazz.newInstance();
 
             // Session Injection
-            if (SessionUtil.containsSummerSession(clazz)) {
-                SessionUtil.injectSession(ctlInstance, request.getSession());
-            }
+            SessionUtil.injectSession(clazz, ctlInstance, request);
 
             // Get the method params (+ validate params' values)
             Method ctlMethod = mapping.getVerbAction(verb).getAction();
@@ -104,7 +102,7 @@ public class FrontController extends HttpServlet {
 
             Object methodResult = ctlMethod.invoke(ctlInstance, ctlMethodParams.toArray());
 
-             if (ctlMethod.isAnnotationPresent(RestApi.class)) {
+            if (ctlMethod.isAnnotationPresent(RestApi.class)) {
                 Object jsonValue = ModelViewUtil.isInstance(methodResult) ?
                         ((ModelView) methodResult).getData() :
                         methodResult;
