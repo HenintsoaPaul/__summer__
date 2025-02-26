@@ -1,5 +1,7 @@
 package src.summer.handler.route;
 
+import src.summer.exception.process.SummerRedirectionException;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import java.util.Arrays;
@@ -29,7 +31,7 @@ public final class HttpSummerRequestWrapper extends HttpServletRequestWrapper {
      * @param request la requête HTTP d’origine
      * @param url     l’URL à traiter
      */
-    public HttpSummerRequestWrapper(HttpServletRequest request, String url) {
+    public HttpSummerRequestWrapper(HttpServletRequest request, String url) throws SummerRedirectionException {
         this(request, url, false);
     }
 
@@ -40,7 +42,7 @@ public final class HttpSummerRequestWrapper extends HttpServletRequestWrapper {
      * @param url           l’URL à traiter
      * @param isRedirection indique si l’URL correspond à une redirection
      */
-    public HttpSummerRequestWrapper(HttpServletRequest request, String url, boolean isRedirection) {
+    public HttpSummerRequestWrapper(HttpServletRequest request, String url, boolean isRedirection) throws SummerRedirectionException {
         super(Objects.requireNonNull(request, "La requête ne peut pas être nulle"));
         this.contextPath = Objects.requireNonNull(request.getContextPath(), "Le contextPath ne peut pas être nul");
         this.originalUrl = Objects.requireNonNull(url, "L'URL ne peut pas être nulle");
@@ -57,23 +59,23 @@ public final class HttpSummerRequestWrapper extends HttpServletRequestWrapper {
      * Analyse l’URL de redirection et met à jour les attributs {@code httpMethod} et {@code route}.
      * Le format attendu est "redirect:&lt;HTTP_METHOD&gt;:&lt;ROUTE&gt;".
      *
-     * @throws IllegalArgumentException si le format de l’URL est incorrect ou si la méthode HTTP est invalide.
+     * @throws SummerRedirectionException si le format de l’URL est incorrect ou si la méthode HTTP est invalide.
      */
-    private void parseRedirectionUrl() {
+    private void parseRedirectionUrl() throws SummerRedirectionException {
         // Format attendu : "redirect:<HTTP_METHOD>:<ROUTE>"
         if (!originalUrl.startsWith("redirect:")) {
-            throw new IllegalArgumentException("URL invalide. Format attendu : redirect:<HTTP_METHOD>:<ROUTE>");
+            throw new SummerRedirectionException("URL invalide. Format attendu : redirect:<HTTP_METHOD>:<ROUTE>");
         }
 
         // On limite le découpage à 3 parties pour autoriser des deux-points dans la route.
         String[] parts = originalUrl.split(":", 3);
         if (parts.length != 3) {
-            throw new IllegalArgumentException("Format d'URL incorrect");
+            throw new SummerRedirectionException("Format d'URL incorrect");
         }
 
         this.httpMethod = parts[1].toUpperCase();
         if (!VALID_METHODS.contains(this.httpMethod)) {
-            throw new IllegalArgumentException("Méthode HTTP invalide : " + this.httpMethod);
+            throw new SummerRedirectionException("Méthode HTTP invalide : " + this.httpMethod);
         }
 
 
