@@ -1,6 +1,13 @@
 # __summer__
-Java framework based on spring-framework.
 
+## What is summer?
+
+Web MVC framework
+
+## Prerequisites
+
+* java 1.8
+* ant
 
 ## How to use the `summer` framework?
 
@@ -66,11 +73,6 @@ representing the URL you want to be listened to.
 ## ModelViews: Where should I place them?
 
 `ModelView`s must be placed in the root folder of the project.
-
-## Compilation
-
-During user's project compilation, the user must specify the parameter `-parameters`
-when running `javac ...` command.
 
 ## Form
 
