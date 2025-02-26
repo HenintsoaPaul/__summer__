@@ -43,8 +43,6 @@ public class SummerFacade {
 
         // while null or redirection, make another call
         while (modelViewUrl.isEmpty() || isRedirection) {
-            System.out.println("modelViewUrl: " + modelViewUrl + " | isRedirection: " + isRedirection);
-
             HttpSummerRequestWrapper httpSummerRequestWrapper = isRedirection ?
                     new HttpSummerRequestWrapper(request, modelViewUrl, true) :
                     new HttpSummerRequestWrapper(request, modelViewUrl);
