@@ -1,10 +1,9 @@
 package src.summer.handler.route;
 
 import src.summer.beans.Mapping;
-import src.summer.beans.ModelView;
 import src.summer.beans.validation.ValidationLog;
 import src.summer.exception.process.NoRouteForUrlException;
-import src.summer.exception.process.NoRouteForVerbException;
+import src.summer.exception.process.NoRouteForHttpMethodException;
 import src.summer.handler.AuthorizationHandler;
 import src.summer.utils.ParamUtil;
 import src.summer.utils.RouterUtil;
@@ -33,13 +32,49 @@ public class SummerFacade {
         this.authorizationHandler = new AuthorizationHandler(context);
     }
 
-    public SummerResponse handle(HttpServletRequest request)
+    public SummerResponse getResponse(HttpServletRequest request)
             throws ServletException, ClassNotFoundException, InstantiationException,
             IllegalAccessException, IOException, NoSuchFieldException, InvocationTargetException,
-            NoSuchMethodException
-    {
-        String route = getRoute(request),
-                httpMethod = request.getMethod();
+            NoSuchMethodException {
+
+        String modelViewUrl = "";
+        SummerResponse summerResponse = null;
+        boolean isRedirection = isRedirectionUrl(request.getRequestURI());
+
+        // while null or redirection, make another call
+        while (modelViewUrl.isEmpty() || isRedirection) {
+            System.out.println("modelViewUrl: " + modelViewUrl + " | isRedirection: " + isRedirection);
+
+            HttpSummerRequestWrapper httpSummerRequestWrapper = isRedirection ?
+                    new HttpSummerRequestWrapper(request, modelViewUrl, true) :
+                    new HttpSummerRequestWrapper(request, modelViewUrl);
+
+            summerResponse = getResponse(httpSummerRequestWrapper);
+
+            if (summerResponse.getModelView() == null) {
+                // if string
+                modelViewUrl = summerResponse.getStringResponse();
+            } else {
+                // if ModelView
+                modelViewUrl = summerResponse.getModelView().getUrl();
+            }
+
+            isRedirection = isRedirectionUrl(modelViewUrl);
+        }
+
+        return summerResponse;
+    }
+
+    private boolean isRedirectionUrl(String url) {
+        return url.startsWith("redirect:");
+    }
+
+    private SummerResponse getResponse(HttpSummerRequestWrapper summerRequestWrapper)
+            throws ServletException, ClassNotFoundException, InstantiationException,
+            IllegalAccessException, IOException, NoSuchFieldException, InvocationTargetException,
+            NoSuchMethodException {
+        String route = getRoute(summerRequestWrapper),
+                httpMethod = summerRequestWrapper.getMethod();
 
         Mapping mapping = getMapping(route, httpMethod);
 
@@ -47,18 +82,18 @@ public class SummerFacade {
 
         Object ctlInstance = getCtlInstance(mapping);
 
-        SessionUtil.injectSession(ctlClass, ctlInstance, request);
+        SessionUtil.injectSession(ctlClass, ctlInstance, summerRequestWrapper);
 
         Method ctlMethod = mapping.getVerbAction(httpMethod).getAction();
 
-        List<Object> ctlMethodParams = getCtlMethodParams(ctlMethod, request);
+        List<Object> ctlMethodParams = getCtlMethodParams(ctlMethod, summerRequestWrapper);
 
         if (validationLog.hasErrors()) {
             SummerResponseBuilder responseBuilder = new SummerResponseBuilder(validationLog);
             return responseBuilder.buildErrorResponse();
         }
 
-        this.authorizationHandler.handle(ctlMethod, request.getSession());
+        this.authorizationHandler.handle(ctlMethod, summerRequestWrapper.getSession());
 
         assert ctlMethodParams != null;
         Object methodResult = ctlMethod.invoke(ctlInstance, ctlMethodParams.toArray());
@@ -75,7 +110,7 @@ public class SummerFacade {
         return RouterUtil.getRoute(url);
     }
 
-    private Mapping getMapping(String route, String httpMethod) throws NoRouteForUrlException, NoRouteForVerbException {
+    private Mapping getMapping(String route, String httpMethod) throws NoRouteForUrlException, NoRouteForHttpMethodException {
         if (!this.URLMappings.containsKey(route)) {
 //            throw new NoRouteForUrlException(route).writeException(response);
 //            return;
@@ -85,9 +120,9 @@ public class SummerFacade {
         Mapping mapping = this.URLMappings.get(route);
 
         if (mapping.getVerbAction(httpMethod) == null) {
-//            new NoRouteForVerbException(httpMethod, url).writeException(response);
+//            new NoRouteForHttpMethodException(httpMethod, url).writeException(response);
 //            return;
-            throw new NoRouteForVerbException(httpMethod, route);
+            throw new NoRouteForHttpMethodException(route, httpMethod);
         }
 
         return mapping;

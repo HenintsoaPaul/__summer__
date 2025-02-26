@@ -27,7 +27,7 @@ public class RangeValidator extends NumberValidator {
 
             double maxValue = rangeAnnotation.maxValue(),
                     minValue = rangeAnnotation.minValue(),
-                    value = (Integer) fieldValue;
+                    value = (java.lang.Double) fieldValue;
 
             if (minValue > value || value > maxValue) {
                 validationLog.addError(new RangeParamException(inputName, value, minValue, maxValue));

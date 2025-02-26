@@ -13,7 +13,7 @@ public class RangeParamException extends SummerFormException {
 
     @Override
     public String getCustomMessage() {
-        return "Field \"" + fieldName + "\" (" + fieldValue + ") is outside range value (" + minValue + ";" + maxValue + ").";
+        return "Field \"" + fieldName + "\" (" + fieldValue + ") is outside range value [" + minValue + ";" + maxValue + "].";
     }
 
     @Override
