@@ -4,6 +4,7 @@ import src.summer.annotations.form.validation.IntRange;
 import src.summer.beans.validation.ValidationLog;
 import src.summer.exception.form.IntParamException;
 import src.summer.exception.form.IntRangeParamException;
+import src.summer.utils.TypeUtil;
 
 import java.lang.reflect.Field;
 
@@ -26,8 +27,9 @@ public class IntRangeValidator extends NumberValidator {
             boolean isNumber = super.isNumber(validationLog, field, inputName);
             if (!isNumber) return;
 
-            if (!Integer.class.isAssignableFrom(field.getType())) {
+            if (!TypeUtil.isInteger(field.getType())) {
                 validationLog.addError(new IntParamException(inputName));
+                return;
             }
 
             int maxValue = intRangeAnnotation.maxValue(),

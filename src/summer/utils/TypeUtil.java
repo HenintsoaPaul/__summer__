@@ -2,20 +2,9 @@ package src.summer.utils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Optional;
 
 public abstract class TypeUtil {
-    public static Class<?>[] getAllPrimitiveWrapperClasses() {
-        return new Class[]{
-                Integer.class, Long.class, Float.class, Double.class,
-                Boolean.class, Byte.class, Short.class, Character.class
-        };
-    }
-
-    public static boolean isPrimitive(Object o) {
-        return Arrays.asList(getAllPrimitiveWrapperClasses()).contains(o);
-    }
 
     public static Object cast(Object value, Class<?> clazz) {
         if (clazz.isInstance(value)) {
@@ -54,6 +43,26 @@ public abstract class TypeUtil {
     }
 
     public static boolean isNumber(Class<?> clazz) {
-        return Number.class.isAssignableFrom(clazz);
+        return Number.class.isAssignableFrom(getWrapperClass(clazz));
+    }
+
+    public static boolean isInteger(Class<?> clazz) {
+        return Integer.class.isAssignableFrom(getWrapperClass(clazz));
+    }
+
+    // Convert primitive types to their corresponding wrapper classes
+    private static Class<?> getWrapperClass(Class<?> primitiveType) {
+        if (!primitiveType.isPrimitive()) {
+            return primitiveType;
+        }
+        if (primitiveType == int.class) return Integer.class;
+        if (primitiveType == double.class) return Double.class;
+        if (primitiveType == long.class) return Long.class;
+        if (primitiveType == float.class) return Float.class;
+        if (primitiveType == short.class) return Short.class;
+        if (primitiveType == byte.class) return Byte.class;
+        if (primitiveType == boolean.class) return Boolean.class;
+        if (primitiveType == char.class) return Character.class;
+        return primitiveType;
     }
 }
