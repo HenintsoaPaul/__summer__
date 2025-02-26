@@ -10,10 +10,10 @@ public class RangeValidator extends NumberValidator {
 
     @Override
     public void validate(ValidationLog validationLog, Field field, Object fieldValue, String inputName) {
-        this.validateAnnotationDoubleRange(validationLog, field, fieldValue, inputName);
+        this.validateAnnotationRange(validationLog, field, fieldValue, inputName);
     }
 
-    private void validateAnnotationDoubleRange(
+    private void validateAnnotationRange(
             ValidationLog validationLog,
             Field field,
             Object fieldValue,
