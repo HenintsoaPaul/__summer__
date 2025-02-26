@@ -64,11 +64,49 @@ representing the URL you want to be listened to.
 
 - Controller methods' parameters must be annotated with `@Param(<myParam>)`.
 
-#### How to return a JSON?
+### How to return a JSON?
 
 - Annotate your method with `@RestApi`.
 
 - The return type can be of any type.
+
+## Redirections
+
+#### Redirection model
+
+`redirect:<HTTP_METHOD>:<ROUTE>`
+
+- `<ROUTE>` is the route of your Controller method. It can start with application 
+context or not.
+
+- `<HTTP_METHOD>` is the HttpMethod of your Controller method.
+
+  **Ex**: `redirect:GET:/my_app/login` is the same as `redirect:GET:/login`.
+
+#### With a ModelView
+
+- Return a ModelView that have an url page like the above model.
+```java
+    @Get
+    @UrlMapping(url = "myUrl")
+    public ModelView someMethod() {
+        // some methods
+        return new ModelView("redirect:GET:/login", null);
+    }
+```
+
+#### With a String
+
+- Return String like the above model.
+```java
+    @Get
+    @UrlMapping(url = "myUrl")
+    public String someMethod() {
+        // some methods
+        return "redirect:GET:/login";
+    }
+```
+
 
 ## ModelViews: Where should I place them?
 
