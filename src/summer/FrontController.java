@@ -26,12 +26,12 @@ import java.util.*;
 public class FrontController extends HttpServlet {
 
     private final ParamUtil paramUtil = new ParamUtil();
+    private final AuthorizationHandler authorizationHandler = new AuthorizationHandler();
 
     /**
      * Map containing the Mapping objects matching to their URLs.
      */
     private HashMap<String, Mapping> URLMappings = new HashMap<>();
-    private final AuthorizationHandler authorizationHandler = new AuthorizationHandler();
 
     @Override
     public void init()

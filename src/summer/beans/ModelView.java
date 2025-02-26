@@ -1,5 +1,7 @@
 package src.summer.beans;
 
+import com.google.gson.Gson;
+
 import java.util.HashMap;
 
 
@@ -47,5 +49,9 @@ public class ModelView {
 
     public void addObject( String key, Object value ) {
         this.data.put( key, value );
+    }
+
+    public String getDataToJson() {
+        return new Gson().toJson( this.getData() );
     }
 }
