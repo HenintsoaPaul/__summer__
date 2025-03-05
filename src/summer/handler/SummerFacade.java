@@ -118,16 +118,12 @@ public class SummerFacade {
 
     private Mapping getMapping(String route, String httpMethod) throws NoRouteForUrlException, NoRouteForHttpMethodException {
         if (!this.URLMappings.containsKey(route)) {
-//            throw new NoRouteForUrlException(route).writeException(response);
-//            return;
             throw new NoRouteForUrlException(route);
         }
 
         Mapping mapping = this.URLMappings.get(route);
 
         if (mapping.getVerbAction(httpMethod) == null) {
-//            new NoRouteForHttpMethodException(httpMethod, url).writeException(response);
-//            return;
             throw new NoRouteForHttpMethodException(route, httpMethod);
         }
 

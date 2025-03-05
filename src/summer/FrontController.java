@@ -11,16 +11,11 @@ import src.summer.handler.SummerFacade;
 import src.summer.utils.*;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
 @MultipartConfig
 public class FrontController extends HttpServlet {
 
-    /**
-     * Map containing the Mapping objects matching to their URLs.
-     */
-    private HashMap<String, Mapping> URLMappings = new HashMap<>();
     private SummerFacade summerFacade;
 
     @Override
@@ -28,9 +23,9 @@ public class FrontController extends HttpServlet {
             throws ServletException {
         try {
             String packageName = getServletContext().getInitParameter("app.controllers.packageName");
-            this.URLMappings = ScannerUtil.scanControllers(packageName);
+            HashMap<String, Mapping> URLMappings = ScannerUtil.scanControllers(packageName);
 
-            summerFacade = new SummerFacade(this.URLMappings, getServletContext());
+            summerFacade = new SummerFacade(URLMappings, getServletContext());
         } catch (Exception e) {
             log("Error initializing FrontController", e);
             throw new ServletException("Initialization failed", e);
@@ -39,18 +34,18 @@ public class FrontController extends HttpServlet {
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException {
+            throws ServletException {
         processRequest(request, response);
     }
 
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException {
+            throws ServletException {
         processRequest(request, response);
     }
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException {
+            throws ServletException {
         try {
             summerFacade.process(request, response);
         } catch (Exception e) {

@@ -15,8 +15,6 @@ public class AuthorizationData {
      * If {@code session} is null, an exception is thrown. If no values are found in the {@code session}, it will use
      * default values.
      *
-     * @param context
-     * @param session
      * @throws SummerAuthorizationException If {@code session} parameter is null
      */
     public AuthorizationData( ServletContext context, HttpSession session )

@@ -14,7 +14,7 @@ public class SummerResponse {
     /**
      * Formatted stringResponse that will be shown
      */
-    private String formattedResponse;
+    private final String formattedResponse;
 
     public SummerResponse(ModelView modelView, String stringResponse, String formattedResponse) {
         this.modelView = modelView;

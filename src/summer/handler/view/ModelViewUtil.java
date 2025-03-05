@@ -2,7 +2,6 @@ package src.summer.handler.view;
 
 import src.summer.beans.ModelView;
 import src.summer.beans.validation.ValidationLog;
-import src.summer.handler.SummerResponse;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -47,7 +46,6 @@ public abstract class ModelViewUtil {
     }
 
     /**
-     * @param modelViewInstance
      * @param validationLog Object contenant les erreurs de validation
      */
     public static void showFormValidationException(
