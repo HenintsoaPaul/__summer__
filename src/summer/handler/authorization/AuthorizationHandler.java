@@ -1,4 +1,4 @@
-package src.summer.handler;
+package src.summer.handler.authorization;
 
 import src.summer.annotations.Authorized;
 import src.summer.beans.authorization.AuthorizationData;

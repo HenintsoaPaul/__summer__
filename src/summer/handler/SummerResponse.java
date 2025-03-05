@@ -1,4 +1,4 @@
-package src.summer.handler.route;
+package src.summer.handler;
 
 import src.summer.beans.ModelView;
 

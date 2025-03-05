@@ -1,4 +1,4 @@
-package src.summer.utils.view;
+package src.summer.handler.view;
 
 import src.summer.beans.ModelView;
 import src.summer.beans.validation.ValidationLog;

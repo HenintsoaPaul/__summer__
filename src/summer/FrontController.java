@@ -7,10 +7,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import src.summer.beans.Mapping;
-import src.summer.handler.route.SummerFacade;
-import src.summer.handler.route.SummerResponse;
+import src.summer.handler.SummerFacade;
+import src.summer.handler.SummerResponse;
 import src.summer.utils.*;
-import src.summer.utils.view.ViewUtil;
+import src.summer.handler.view.ViewUtil;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;

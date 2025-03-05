@@ -1,4 +1,4 @@
-package src.summer.utils;
+package src.summer.handler.route;
 
 import src.summer.exception.route.SummerRoutingException;
 

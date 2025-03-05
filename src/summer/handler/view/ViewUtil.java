@@ -1,10 +1,10 @@
-package src.summer.utils.view;
+package src.summer.handler.view;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import src.summer.handler.route.SummerResponse;
+import src.summer.handler.SummerResponse;
 
 import java.io.IOException;
 import java.io.PrintWriter;
