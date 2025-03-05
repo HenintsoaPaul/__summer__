@@ -38,18 +38,16 @@ public abstract class RouterUtil {
      * @throws SummerRoutingException si le format des paramètres est incorrect
      * @throws RuntimeException       si une erreur survient lors du décodage des paramètres
      */
-    public static void gererParametreDansRoute(String route, HttpServletRequest request) throws SummerRoutingException {
+    public static String gererParametreDansRoute(String route, HttpServletRequest request) throws SummerRoutingException {
         // Trouver le début des paramètres
         int indexBegin = route.indexOf("?");
-
         if (indexBegin == -1) {
             // pas de paramètre envoyé dans l'url
-            return;
+            return route;
         }
 
-        String params = route.substring(indexBegin + 1);
-
         // Diviser les paramètres par &
+        String params = route.substring(indexBegin + 1);
         String[] couples = params.split("&");
 
         for (String couple : couples) {
@@ -69,5 +67,7 @@ public abstract class RouterUtil {
                 throw new SummerRoutingException("Erreur lors du décodage des paramètres", e);
             }
         }
+
+        return route.substring(0, indexBegin);
     }
 }
