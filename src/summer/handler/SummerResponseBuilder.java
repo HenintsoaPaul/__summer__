@@ -38,7 +38,7 @@ public class SummerResponseBuilder {
     }
 
     public SummerResponse build() {
-        if (validationLog != null) {
+        if (validationLog == null) {
             return buildOkResponse();
         } else {
             return buildErrorResponse();
