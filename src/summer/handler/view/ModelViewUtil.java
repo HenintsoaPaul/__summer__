@@ -2,6 +2,7 @@ package src.summer.handler.view;
 
 import src.summer.beans.ModelView;
 import src.summer.beans.validation.ValidationLog;
+import src.summer.handler.SummerResponse;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -9,8 +10,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 public abstract class ModelViewUtil {
+    public static void printString(String strToPrint, HttpServletResponse response) throws IOException {
+        PrintWriter out = response.getWriter();
+        out.print(strToPrint);
+    }
+
     /**
      * Verify whether an object is an instance of ModelView class.
      */

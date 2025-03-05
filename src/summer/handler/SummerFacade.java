@@ -6,6 +6,7 @@ import src.summer.exception.process.NoRouteForUrlException;
 import src.summer.exception.process.NoRouteForHttpMethodException;
 import src.summer.handler.authorization.AuthorizationHandler;
 import src.summer.handler.route.RouterFacade;
+import src.summer.handler.view.ViewFacade;
 import src.summer.utils.ParamUtil;
 import src.summer.utils.ScannerUtil;
 import src.summer.utils.SessionUtil;
@@ -13,6 +14,7 @@ import src.summer.utils.SessionUtil;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -24,6 +26,7 @@ public class SummerFacade {
     private final HashMap<String, Mapping> URLMappings;
     private final AuthorizationHandler authorizationHandler;
 
+    private final ViewFacade viewFacade = new ViewFacade();
     private final RouterFacade routerFacade = new RouterFacade();
     private final ParamUtil paramUtil = new ParamUtil();
     private final ValidationLog validationLog = new ValidationLog();
@@ -31,6 +34,11 @@ public class SummerFacade {
     public SummerFacade(HashMap<String, Mapping> URLMappings, ServletContext context) {
         this.URLMappings = URLMappings;
         this.authorizationHandler = new AuthorizationHandler(context);
+    }
+
+    public void process(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException, NoSuchFieldException, ClassNotFoundException, InvocationTargetException, InstantiationException, IllegalAccessException, NoSuchMethodException {
+        SummerResponse summerResponse = getResponse(req);
+        viewFacade.render(summerResponse, req, resp);
     }
 
     public SummerResponse getResponse(HttpServletRequest request)

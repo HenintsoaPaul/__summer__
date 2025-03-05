@@ -8,13 +8,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import src.summer.beans.Mapping;
 import src.summer.handler.SummerFacade;
-import src.summer.handler.SummerResponse;
 import src.summer.utils.*;
-import src.summer.handler.view.ViewUtil;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.HashMap;
 
 @MultipartConfig
 public class FrontController extends HttpServlet {
@@ -54,8 +52,7 @@ public class FrontController extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
         try {
-            SummerResponse summerResponse = summerFacade.getResponse(request);
-            ViewUtil.show(summerResponse, request, response);
+            summerFacade.process(request, response);
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
                  InvocationTargetException | NoSuchFieldException | NoSuchMethodException e) {
             // todo: Envoyer les exceptions vers une view custom...
