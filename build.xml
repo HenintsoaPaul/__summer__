@@ -23,7 +23,7 @@
     <target name="create-temp-dir" depends="init">
         <mkdir dir="${temp.dir}"/>
         <mkdir dir="${target.dir}"/>
-        <echo message="Create-temp Done" />
+        <echo message="Create-temp Done"/>
     </target>
 
     <target name="copy-java-files" depends="create-temp-dir">
@@ -33,7 +33,12 @@
     </target>
 
     <target name="compile-java" depends="copy-java-files">
-        <javac srcdir="${temp.dir}" destdir="${target.dir}" classpathref="compile.classpath" includeantruntime="false">
+        <javac srcdir="${temp.dir}"
+               destdir="${target.dir}"
+               classpathref="compile.classpath"
+               includeantruntime="false"
+               debug="true"
+               debuglevel="lines,vars,source">
         </javac>
     </target>
 
@@ -45,7 +50,9 @@
     </target>
 
     <target name="create-jar" depends="create-manifest">
-        <jar destfile="${work.dir}/summer-framework.jar" basedir="${target.dir}"/>
+        <jar destfile="${work.dir}/summer-framework.jar" basedir="${target.dir}">
+            <fileset dir="${src.dir}" includes="**/*.java"/>
+        </jar>
     </target>
 
 
@@ -58,6 +65,9 @@
 
     <target name="deploy" depends="clean">
         <copy todir="${work.dir}/../summer-test/build-file/lib">
+            <fileset file="${work.dir}/summer-framework.jar"/>
+        </copy>
+        <copy todir="D:\ITU\INF209-Web_Dynamique\tike-tiko\build-file\lib">
             <fileset file="${work.dir}/summer-framework.jar"/>
         </copy>
         <echo message="Build done."/>

@@ -1,5 +1,7 @@
 package src.summer.beans.validation;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,7 +10,7 @@ public class ValidationError {
     List<String> errors = new ArrayList<>();
 
     // Constr
-    public ValidationError( String inputName ) {
+    public ValidationError(String inputName) {
         this.inputName = inputName;
     }
 
@@ -17,7 +19,7 @@ public class ValidationError {
         return inputName;
     }
 
-    public void setInputName( String inputName ) {
+    public void setInputName(String inputName) {
         this.inputName = inputName;
     }
 
@@ -25,11 +27,15 @@ public class ValidationError {
         return errors;
     }
 
-    public void setErrors( List<String> errors ) {
+    public void setErrors(List<String> errors) {
         this.errors = errors;
     }
 
-    public void addError( String error ) {
-        errors.add( error );
+    public void addError(String error) {
+        errors.add(error);
+    }
+
+    public String toHtml() throws ParserConfigurationException, TransformerException {
+        return new ValidationErrorDisplay(errors).toHtml();
     }
 }

@@ -1,5 +1,7 @@
 package src.summer.beans;
 
+import com.google.gson.Gson;
+
 import java.util.HashMap;
 
 
@@ -8,10 +10,6 @@ public class ModelView {
      * Path to the view.
      */
     String url;
-    /**
-     * Path to the fallback view for errors.
-     */
-    String errorUrl;
     /**
      * Data to dispatch the view.
      */
@@ -53,11 +51,7 @@ public class ModelView {
         this.data.put( key, value );
     }
 
-    public String getErrorUrl() {
-        return errorUrl;
-    }
-
-    public void setErrorUrl( String errorUrl ) {
-        this.errorUrl = errorUrl;
+    public String getDataToJson() {
+        return new Gson().toJson( this.getData() );
     }
 }

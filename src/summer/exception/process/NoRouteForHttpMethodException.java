@@ -1,10 +1,10 @@
 package src.summer.exception.process;
 
-public class NoRouteForVerbException extends SummerRoutingException {
+public class NoRouteForHttpMethodException extends SummerRoutingException {
     private final String url;
     private final String httpVerb;
 
-    public NoRouteForVerbException( String url, String httpVerb ) {
+    public NoRouteForHttpMethodException(String url, String httpVerb ) {
         super();
         this.url = url;
         this.httpVerb = httpVerb;
@@ -12,6 +12,6 @@ public class NoRouteForVerbException extends SummerRoutingException {
 
     @Override
     public String getMessage() {
-        return "No httpVerb \"" + httpVerb + "\" for this URL: \"" + this.url + "\".";
+        return "No httpMethod \"" + httpVerb + "\" for URL: \"" + this.url + "\".";
     }
 }

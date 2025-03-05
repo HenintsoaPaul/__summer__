@@ -1,6 +1,13 @@
 # __summer__
-Java framework based on spring-framework.
 
+## What is summer?
+
+Web MVC framework
+
+## Prerequisites
+
+* java 1.8
+* ant
 
 ## How to use the `summer` framework?
 
@@ -57,20 +64,53 @@ representing the URL you want to be listened to.
 
 - Controller methods' parameters must be annotated with `@Param(<myParam>)`.
 
-#### How to return a JSON?
+### How to return a JSON?
 
 - Annotate your method with `@RestApi`.
 
 - The return type can be of any type.
 
+## Redirections
+
+#### Redirection model
+
+`redirect:<HTTP_METHOD>:<ROUTE>`
+
+- `<ROUTE>` is the route of your Controller method. It can start with application 
+context or not.
+
+- `<HTTP_METHOD>` is the HttpMethod of your Controller method.
+
+  **Ex**: `redirect:GET:/my_app/login` is the same as `redirect:GET:/login`.
+
+#### With a ModelView
+
+- Return a ModelView that have an url page like the above model.
+```java
+    @Get
+    @UrlMapping(url = "myUrl")
+    public ModelView someMethod() {
+        // some methods
+        return new ModelView("redirect:GET:/login", null);
+    }
+```
+
+#### With a String
+
+- Return String like the above model.
+```java
+    @Get
+    @UrlMapping(url = "myUrl")
+    public String someMethod() {
+        // some methods
+        return "redirect:GET:/login";
+    }
+```
+
+
 ## ModelViews: Where should I place them?
 
 `ModelView`s must be placed in the root folder of the project.
-
-## Compilation
-
-During user's project compilation, the user must specify the parameter `-parameters`
-when running `javac ...` command.
 
 ## Form
 
@@ -120,30 +160,17 @@ public class FormController extends HttpServlet {
 ```
 
 ###### Supported types
-`int`, `String`, `LocalDate`.
 
-### Form Validation
+`int`, `String`, `java.time.LocalDate`, `java.time.LocalDateTime`.
 
-- Create an entity that contains the fields of the form.
-
-- Bind the form to the entity.
-
-- Annotate fields that should validate with annotations
-in `annotations.form.validation`.
-
-- That is it.
-
-##### Validators:
-
-- @Required
 
 ### Sending File through form
 
 - Add attribute `enctype="multipart/form-data"` to `<form action="[actionMethod]"><form/>` tag.
 
-- The names of input tag for files must begin with `file`.
-
 - In the controller method, annotate the args with `@Param( name="file<abcd...>", isFile = true )`.
+
+- You can save the file to a desired path from your controller method.
 
 ```html
 <form action="fufu" method="POST" enctype="multipart/form-data">
@@ -160,19 +187,115 @@ public class FileController {
     @Post
     @UrlMapping( url = "fufu" )
     public String gererFichier(
-            @Param( name = "fileA", isFile = true ) SummerFile fileA,
-            @Param( name = "fileB", isFile = true ) SummerFile fi
+            @Param( name = "fileA", isFile = true ) SummerFile myFile
     ) {
-
+        // some processing...
         System.out.println( "FileName > " + fileA.getFileName() );
         System.out.println( "byte > " + fileA.getFileBytes().length );
+        
+        // save file
+        String fileDirectory = "C:\\Users\\Henintsoa\\Documents\\_data";
+        myFile.saveToFile(fileDirectory);
 
-        System.out.println( "FileName > " + fi.getFileName() );
-        System.out.println( "byte > " + fi.getFileBytes().length );
-
-        return "fichier";
+        return "File saved on the server. Path: " + fileDirectory + "\\" + myFile.getFileName();
     }
 }
+```
+
+
+### Form Validation
+
+- Create an entity that contains the fields of the form.
+
+- Annotate fields that should be validated with annotations
+  in `annotations.form.validation`.
+
+- In the html page, bind the form to the entity.
+
+- In the controller method that is called on the form action, annotate
+  parameters that should be validated with `@Validate(errorPage)`. **Only annotated
+  parameters will be validated.**
+
+- **Till now, methods are redirect to the errorPage using *GET* method**
+
+##### Validators:
+
+- @Required()
+
+- @Min(value)
+
+- @Max(value)
+
+- @IntRange(minValue, maxValue)
+
+##### Validation errors:
+
+- Validation errors are available in `request` object of the page specified in `@Validate(errorPage="...")`.
+
+- There is a default method to show validation errors using bootstrap classes. Anyway, you can customize the
+way you display the validation error in your page. Errors for a field are available as `List<String>` via 
+`ValidationError.getErrors("myFieldName")`.
+
+###### Example:
+
+```java
+    @Post
+    @UrlMapping(url = "reservation_save")
+    public ModelView save(
+            @Validate(errorPage = "reservation_form") 
+            @Param(name = "formData") ReservationFormData reservationFormData
+    ) {
+    // your controller method body...
+    }
+```
+
+```html
+    <%-- Date reservation --%>
+    <div class="mb-3">
+        <label class="form-label">Date Reservation</label>
+        <input type="datetime-local"
+               name="formData.date_reservation"
+               class="form-control"
+               value="<%= lastInput != null ? lastInput.getDate_reservation() : "" %>"/>
+        <%
+            if (lastInput != null) {
+              Optional<ValidationError> vErr = vLog.getErrorByInput("formData.date_reservation");
+              if (vErr.isPresent()) {
+                out.print(vErr.get().toHtml());
+              }
+            }
+        %>
+    </div>
+
+    <%-- Type Siege --%>
+    <div class="mb-3">
+        <label class="form-label">Type Siege: </label>
+        <select name="formData.id_type_siege">
+            <option value="">Choisir le siege</option>
+            <%for (TypeSiege typeSiege : typeSieges) { %>
+            <option
+                    value="<%= typeSiege.getId()%>"
+                    <%
+                        if (lastInput != null) {
+                            if (lastInput.getId_type_siege() == typeSiege.getId()) {
+                                out.print("selected");
+                            }
+                        }
+                    %>
+            >
+                <%= typeSiege.getNom() %>
+            </option>
+            <% } %>
+            <%
+                if (lastInput != null) {
+                Optional<ValidationError> vErr = vLog.getErrorByInput("formData.date_reservation");
+                  if (vErr.isPresent()) {
+                    out.print(vErr.get().toHtml());
+                  }
+                }
+            %>
+        </select>
+    </div>
 ```
 
 
@@ -180,19 +303,6 @@ public class FileController {
 
 - To use Session in a `@Controller` class, you need to add a field `SummerSession`
 to your class.
-
-```java
-import jakarta.servlet.http.HttpServlet;
-import src.summer.annotations.controller.Controller;
-import src.summer.beans.SummerSession;
-
-@Controller
-public class YourController extends HttpServlet {
-    SummerSession summerSession;
-
-    // your methods ...
-}
-```
 
 - To use Session in a view, you need to dispatch the `SummerSession` of your
 controller to your `ModelView`.
@@ -208,6 +318,7 @@ import src.summer.exception.SummerSessionException;
 
 @Controller
 public class YourController extends HttpServlet {
+    // Session injection
     SummerSession summerSession;
 
     @UrlMapping( urlMapping = "auth" )
@@ -242,14 +353,17 @@ public class YourController extends HttpServlet {
 - Add variables' names in the `web.xml` file of your project like the following:
 
 ```xml
-<context-param>
-    <param-name>var_user_authenticated</param-name>
-    <param-value>yourVariableName1</param-value>
-</context-param>
-<context-param>
-    <param-name>var_user_role_level</param-name>
-    <param-value>yourVariableName2</param-value>
-</context-param>
+
+<web-app>
+    <context-param>
+        <param-name>var_user_authenticated</param-name>
+        <param-value>yourVariableName1</param-value>
+    </context-param>
+    <context-param>
+        <param-name>var_user_role_level</param-name>
+        <param-value>yourVariableName2</param-value>
+    </context-param>
+</web-app>
 ```
 
 ### Authorize routes
