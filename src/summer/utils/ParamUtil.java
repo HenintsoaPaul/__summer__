@@ -113,6 +113,15 @@ public class ParamUtil {
         return paramValue;
     }
 
+    /**
+     * Extrait les noms des champs d'une entité à partir des paramètres de la requête HTTP.
+     * Cette méthode analyse les paramètres de la requête pour identifier ceux qui appartiennent
+     * à l'entité spécifiée et extrait leurs noms de champs.
+     *
+     * @param entityName le nom de l'entité dont les champs doivent être extraits
+     * @param request l'objet HttpServletRequest contenant les paramètres à analyser
+     * @return une liste des noms de champs de l'entité trouvés dans le request
+     */
     private List<String> getFieldsNames(String entityName, HttpServletRequest request) {
         List<String> fields = new ArrayList<>();
         Enumeration<String> listParameterNames = request.getParameterNames();
