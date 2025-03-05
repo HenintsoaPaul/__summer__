@@ -4,7 +4,7 @@ import src.summer.beans.Mapping;
 import src.summer.beans.validation.ValidationLog;
 import src.summer.exception.process.NoRouteForUrlException;
 import src.summer.exception.process.NoRouteForHttpMethodException;
-import src.summer.handler.authorization.AuthorizationHandler;
+import src.summer.handler.authorization.AuthorizationFacade;
 import src.summer.handler.route.RouterFacade;
 import src.summer.handler.view.ViewFacade;
 import src.summer.utils.ParamUtil;
@@ -26,7 +26,7 @@ import java.util.logging.Logger;
 public class SummerFacade {
 
     private final HashMap<String, Mapping> URLMappings;
-    private final AuthorizationHandler authorizationHandler;
+    private final AuthorizationFacade authorizationFacade;
 
     private final ViewFacade viewFacade = new ViewFacade();
     private final RouterFacade routerFacade = new RouterFacade();
@@ -35,7 +35,7 @@ public class SummerFacade {
 
     public SummerFacade(HashMap<String, Mapping> URLMappings, ServletContext context) {
         this.URLMappings = URLMappings;
-        this.authorizationHandler = new AuthorizationHandler(context);
+        this.authorizationFacade = new AuthorizationFacade(context);
     }
 
     public void process(HttpServletRequest req, HttpServletResponse resp) throws Exception {
@@ -107,7 +107,7 @@ public class SummerFacade {
             return new SummerResponseBuilder(validationLog).build();
         }
 
-        this.authorizationHandler.handle(ctlMethod, summerRequestWrapper.getSession());
+        this.authorizationFacade.handle(ctlMethod, summerRequestWrapper.getSession());
 
         assert ctlMethodParams != null;
         Object methodResult = ctlMethod.invoke(ctlInstance, ctlMethodParams.toArray());
