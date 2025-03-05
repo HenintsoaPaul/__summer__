@@ -353,14 +353,17 @@ public class YourController extends HttpServlet {
 - Add variables' names in the `web.xml` file of your project like the following:
 
 ```xml
-<context-param>
-    <param-name>var_user_authenticated</param-name>
-    <param-value>yourVariableName1</param-value>
-</context-param>
-<context-param>
-    <param-name>var_user_role_level</param-name>
-    <param-value>yourVariableName2</param-value>
-</context-param>
+
+<web-app>
+    <context-param>
+        <param-name>var_user_authenticated</param-name>
+        <param-value>yourVariableName1</param-value>
+    </context-param>
+    <context-param>
+        <param-name>var_user_role_level</param-name>
+        <param-value>yourVariableName2</param-value>
+    </context-param>
+</web-app>
 ```
 
 ### Authorize routes

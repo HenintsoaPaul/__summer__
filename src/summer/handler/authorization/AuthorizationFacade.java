@@ -1,7 +1,6 @@
 package src.summer.handler.authorization;
 
 import src.summer.annotations.Authorized;
-import src.summer.beans.authorization.AuthorizationData;
 import src.summer.exception.SummerAuthorizationException;
 
 import javax.servlet.ServletContext;
@@ -9,22 +8,22 @@ import javax.servlet.http.HttpSession;
 import java.lang.reflect.Method;
 
 
-public class AuthorizationHandler {
+public class AuthorizationFacade {
 
     private final int NO_AUTHORIZATION_REQUIRED = -1;
     private final ServletContext servletContext;
 
-    public AuthorizationHandler(ServletContext servletContext) {
+    public AuthorizationFacade(ServletContext servletContext) {
         this.servletContext = servletContext;
     }
 
-    public AuthorizationHandler() {
+    public AuthorizationFacade() {
         this.servletContext = null;
     }
 
     /**
-     * Verify that userAuthenticated is true.
-     * Verify that userRoleLevel >= requiredRoleLevel or requiredRoleLevel == 0.
+     * Verify that session.userAuthenticated is true.
+     * Verify that (session.userRoleLevel >= ctlMethod.requiredRoleLevel) or (ctlMethod.requiredRoleLevel == 0).
      */
     public void handle(Method ctlMethod, HttpSession session)
             throws SummerAuthorizationException {
@@ -38,7 +37,7 @@ public class AuthorizationHandler {
      * Verify that userAuthenticated is true.
      * Verify that userRoleLevel >= requiredRoleLevel or requiredRoleLevel == 0.
      */
-    public void handle(Method ctlMethod, ServletContext context, HttpSession session)
+    private void handle(Method ctlMethod, ServletContext context, HttpSession session)
             throws SummerAuthorizationException {
         AuthorizationData authorizationData = new AuthorizationData(context, session);
         int requiredRoleLevel = this.getRequiredRoleLevel(ctlMethod);
@@ -75,7 +74,7 @@ public class AuthorizationHandler {
      *
      * @param method Controller method to be verified
      */
-    public int getRequiredRoleLevel(Method method) {
+    private int getRequiredRoleLevel(Method method) {
         if (method.isAnnotationPresent(Authorized.class)) {
             return method.getAnnotation(Authorized.class).roleLevel();
         }

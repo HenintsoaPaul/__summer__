@@ -1,4 +1,4 @@
-package src.summer.beans.authorization;
+package src.summer.handler.authorization;
 
 import src.summer.exception.SummerAuthorizationException;
 
