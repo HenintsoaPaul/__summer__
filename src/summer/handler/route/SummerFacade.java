@@ -4,6 +4,7 @@ import src.summer.beans.Mapping;
 import src.summer.beans.validation.ValidationLog;
 import src.summer.exception.process.NoRouteForUrlException;
 import src.summer.exception.process.NoRouteForHttpMethodException;
+import src.summer.exception.route.SummerRoutingException;
 import src.summer.handler.AuthorizationHandler;
 import src.summer.utils.ParamUtil;
 import src.summer.utils.RouterUtil;
@@ -101,11 +102,14 @@ public class SummerFacade {
         return responseBuilder.buildOkResponse();
     }
 
-    private String getRoute(HttpServletRequest request) {
-        // like "/my_project/<blab>/<...>"
-        String url = request.getRequestURI();
-        // like "<blab>/<...>"
-        return RouterUtil.getRoute(url);
+    private String getRoute(HttpServletRequest request) throws SummerRoutingException {
+        String url = request.getRequestURI(),
+                route = RouterUtil.getRoute(url);
+
+        // parametres des routes
+        RouterUtil.gererParametreDansRoute(route, request);
+
+        return route;
     }
 
     private Mapping getMapping(String route, String httpMethod) throws NoRouteForUrlException, NoRouteForHttpMethodException {
