@@ -20,6 +20,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class SummerFacade {
 
@@ -36,9 +38,15 @@ public class SummerFacade {
         this.authorizationHandler = new AuthorizationHandler(context);
     }
 
-    public void process(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException, NoSuchFieldException, ClassNotFoundException, InvocationTargetException, InstantiationException, IllegalAccessException, NoSuchMethodException {
-        SummerResponse summerResponse = getResponse(req);
-        viewFacade.render(summerResponse, req, resp);
+    public void process(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+        try {
+            SummerResponse summerResponse = getResponse(req);
+            viewFacade.render(summerResponse, req, resp);
+        } catch (Exception e) {
+            Logger.getLogger(SummerFacade.class.getName())
+                    .log(Level.SEVERE, "Erreur dans SummerFacade", e);
+            throw e;
+        }
     }
 
     public SummerResponse getResponse(HttpServletRequest request)

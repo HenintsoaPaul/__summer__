@@ -53,11 +53,9 @@ public class FrontController extends HttpServlet {
             throws IOException, ServletException {
         try {
             summerFacade.process(request, response);
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
-                 InvocationTargetException | NoSuchFieldException | NoSuchMethodException e) {
+        } catch (Exception e) {
             // todo: Envoyer les exceptions vers une view custom...
-            e.printStackTrace();
-            throw new ServletException(e);
+            throw new ServletException("Erreur de traitement", e); // Préservation du cause
         }
     }
 }
