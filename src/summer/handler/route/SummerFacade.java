@@ -4,10 +4,8 @@ import src.summer.beans.Mapping;
 import src.summer.beans.validation.ValidationLog;
 import src.summer.exception.process.NoRouteForUrlException;
 import src.summer.exception.process.NoRouteForHttpMethodException;
-import src.summer.exception.route.SummerRoutingException;
 import src.summer.handler.AuthorizationHandler;
 import src.summer.utils.ParamUtil;
-import src.summer.utils.RouterUtil;
 import src.summer.utils.ScannerUtil;
 import src.summer.utils.SessionUtil;
 
@@ -25,6 +23,7 @@ public class SummerFacade {
     private final HashMap<String, Mapping> URLMappings;
     private final AuthorizationHandler authorizationHandler;
 
+    private final RouterFacade routerFacade = new RouterFacade();
     private final ParamUtil paramUtil = new ParamUtil();
     private final ValidationLog validationLog = new ValidationLog();
 
@@ -72,7 +71,7 @@ public class SummerFacade {
             throws ServletException, ClassNotFoundException, InstantiationException,
             IllegalAccessException, IOException, NoSuchFieldException, InvocationTargetException,
             NoSuchMethodException {
-        String route = getRoute(summerRequestWrapper),
+        String route = routerFacade.getRoute(summerRequestWrapper),
                 httpMethod = summerRequestWrapper.getMethod();
 
         Mapping mapping = getMapping(route, httpMethod);
@@ -88,8 +87,7 @@ public class SummerFacade {
         List<Object> ctlMethodParams = getCtlMethodParams(ctlMethod, summerRequestWrapper);
 
         if (validationLog.hasErrors()) {
-            SummerResponseBuilder responseBuilder = new SummerResponseBuilder(validationLog);
-            return responseBuilder.buildErrorResponse();
+            return new SummerResponseBuilder(validationLog).build();
         }
 
         this.authorizationHandler.handle(ctlMethod, summerRequestWrapper.getSession());
@@ -98,18 +96,7 @@ public class SummerFacade {
         Object methodResult = ctlMethod.invoke(ctlInstance, ctlMethodParams.toArray());
 
         // methodResult possible types : ModelView - String(simple, JSON)
-        SummerResponseBuilder responseBuilder = new SummerResponseBuilder(mapping, methodResult, httpMethod);
-        return responseBuilder.buildOkResponse();
-    }
-
-    private String getRoute(HttpServletRequest request) throws SummerRoutingException {
-        String url = request.getRequestURI(),
-                route = RouterUtil.getRoute(url);
-
-        // parametres des routes
-        RouterUtil.gererParametreDansRoute(route, request);
-
-        return route;
+        return new SummerResponseBuilder(mapping, methodResult, summerRequestWrapper).build();
     }
 
     private Mapping getMapping(String route, String httpMethod) throws NoRouteForUrlException, NoRouteForHttpMethodException {
